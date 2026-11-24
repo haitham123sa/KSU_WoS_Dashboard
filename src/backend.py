@@ -340,17 +340,26 @@ class DehDashboardApp:
             api_key = ""
 
     def render_html(self, offline=False, refresh_context=None):
-        bootstrap = {"mode": "offline", "state": self.public_state(for_export=True)} if offline else {"mode": "live", "token": self.token}
-        if offline and refresh_context:
+        remote = bool(offline and refresh_context and refresh_context.get("mode") == "remote")
+        if remote:
+            bootstrap = {"mode": "remote", "api_base": refresh_context.get("api_base", ""), "state": self.public_state(for_export=True)}
             bootstrap["state"]["refresh_context"] = copy.deepcopy(refresh_context)
+        else:
+            bootstrap = {"mode": "offline", "state": self.public_state(for_export=True)} if offline else {"mode": "live", "token": self.token}
+            if offline and refresh_context:
+                bootstrap["state"]["refresh_context"] = copy.deepcopy(refresh_context)
         encoded = json.dumps(bootstrap, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
-        encoded = encoded.replace("&", "\\u0026").replace("<", "\\u003c").replace(">", "\\u003e").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
+        encoded = encoded.replace("&", "\\u0026").replace("<", "\\u003c").replace(">", "\\u003e").replace("\\u2028", "\\u2028").replace("\\u2029", "\\u2029")
         if UI_HTML.count("__DEH_BOOTSTRAP_JSON__") != 1:
             raise ValueError("Dashboard template is missing its data placeholder.")
         html = UI_HTML.replace("__DEH_BOOTSTRAP_JSON__", encoded)
-        if offline:
+        if offline and not remote:
             offline_policy = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'"
             html = html.replace("<head>", '<head><meta http-equiv="Content-Security-Policy" content="' + offline_policy + '">', 1)
+        elif remote:
+            api_origin = str(refresh_context.get("api_base", "")).rstrip("/")
+            remote_policy = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'self' " + api_origin + "; base-uri 'none'; form-action 'none'"
+            html = html.replace("<head>", '<head><meta http-equiv="Content-Security-Policy" content="' + remote_policy + '">', 1)
         return html.encode("utf-8")
 
 
