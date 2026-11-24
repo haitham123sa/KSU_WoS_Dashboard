@@ -1,3 +1,4 @@
+# Deployment target: GitHub Pages
 name: Publish DEH dashboard to GitHub Pages
 
 on:
