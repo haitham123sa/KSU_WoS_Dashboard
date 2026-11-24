@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>DEH Research Dashboard</title>
+  <style>
+    :root{--ink:#172c43;--navy:#12283e;--blue:#176f80;--blue-soft:#e9f4f5;--muted:#667589;--line:#dfe6ed;--bg:#f5f7fa;--paper:#fff;--amber:#fff7e5;--amber-ink:#78540c;--red:#a13b3e;--red-soft:#fff1f1;--green:#14765f;--green-soft:#e8f6f0;--radius:16px;--rail:232px}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}button,input,select{font:inherit}button,a,input,select,summary{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.48}a{color:var(--blue);text-underline-offset:3px}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #36a3b7;outline-offset:3px}button,input,select{border-radius:8px}input,select{border:1px solid #ced8e3;background:#fff;color:var(--ink);padding:10px 12px;min-height:44px;font-size:14px}select{appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%235e7287' stroke-width='1.6'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center}input[type=search]{padding-left:37px}label{font-size:14px;font-weight:600;color:#53657a;display:block;margin-bottom:7px}h1,h2,h3,p{margin:0}h1{font-size:32px;letter-spacing:-1.15px;line-height:1.2;font-weight:720}h2{font-size:19px;letter-spacing:-.4px;font-weight:680}h3{font-size:16px}small,.small{font-size:13px}.muted{color:var(--muted)}.hidden,[hidden]{display:none!important}.wrap{margin-left:var(--rail);max-width:1760px;padding:34px 36px 24px}.sidebar{position:fixed;inset:0 auto 0 0;width:var(--rail);background:var(--navy);color:#edf4fa;display:flex;flex-direction:column;padding:31px 18px 22px;z-index:20}.sidebar-brand{display:flex;align-items:center;gap:12px;padding:0 10px 36px}.brand-mark{width:43px;height:43px;border-radius:12px;background:#227f8b;display:grid;place-items:center;color:#fff;font-size:15px;font-weight:750;letter-spacing:.5px}.brand-name{font-size:20px;font-weight:740;letter-spacing:-.5px}.brand-sub{font-size:12px;color:#9aafc2;margin-top:1px}.sidebar-label{color:#829bb0;font-size:12px;letter-spacing:1.4px;font-weight:650;padding:0 14px 12px}.nav{display:flex;flex-direction:column;gap:7px}.nav-tab{width:100%;border:0;background:transparent;color:#b6c6d4;display:flex;gap:12px;align-items:center;padding:13px 14px;font-size:14px;font-weight:600;text-align:left;border-radius:9px;min-height:47px;white-space:nowrap}.nav-tab:hover{background:#203c53;color:white}.nav-tab[aria-selected=true]{background:#244457;color:#fff;box-shadow:inset 3px 0 #54c4c7}.nav-tab svg{width:19px;height:19px;flex:0 0 auto;opacity:.9}.nav-tab:last-child{margin-top:22px}.sidebar-bottom{margin-top:auto;padding:28px 12px 0}.sidebar-context{padding:16px 0;border-top:1px solid #294056}.sidebar-context strong{display:block;font-size:14px;font-weight:600;margin:7px 0 2px}.sidebar-context p{color:#94aabd;font-size:12px;line-height:1.6}.sidebar-link{color:#b5c9d9;font-size:13px;display:inline-flex;align-items:center;gap:8px;text-decoration:none;margin-top:14px}.sidebar-link:hover{color:white}.sidebar-link svg{width:16px;height:16px}.site-header{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-bottom:27px}.eyebrow{font-size:12px;letter-spacing:1.55px;color:#728399;font-weight:650;margin-bottom:10px}.subtitle{margin-top:8px;color:var(--muted);font-size:14px}.header-actions{display:flex;align-items:center;gap:10px}.btn{border:1px solid #d0dbe5;padding:10px 15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;background:#fff;color:#344b61;font-size:14px;font-weight:650;white-space:nowrap;text-decoration:none}.btn:hover:not(:disabled){background:#eef4f7;border-color:#aebfcf}.btn-primary{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 2px 3px #12334408}.btn-primary:hover:not(:disabled){background:#125c6b;border-color:#125c6b;color:#fff}.btn-quiet{padding:6px 10px;min-height:34px;background:transparent;font-size:13px}.btn svg{width:17px;height:17px;flex:0 0 auto}.btn-icon{padding:10px;min-width:42px}.header-meta{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:22px;font-size:13px;color:var(--muted)}.last-refresh{font-size:13px;color:var(--muted)}.last-refresh strong{font-weight:550;margin-left:7px;color:#4b6178}.data-state{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:#637084}.data-state::before{content:"";height:7px;width:7px;border-radius:50%;background:#c88c29}.data-state[data-state=complete]::before{background:#1b8b69}.data-state[data-state=running]::before{background:#2c8ca9}.data-state[data-state=failed]::before{background:#c6595d}.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:23px;box-shadow:0 2px 5px #142c4a02}.refresh-panel{margin-bottom:22px}.refresh-grid{display:grid;grid-template-columns:minmax(220px,1fr) minmax(350px,1.2fr);align-items:center;gap:24px}.refresh-copy p{margin-top:7px;color:var(--muted);font-size:14px;max-width:480px}.key-form{display:flex;gap:10px;align-items:flex-end}.key-field{flex:1;min-width:165px}.key-field input{width:100%}.key-note{margin-top:8px;color:var(--muted);font-size:12px}.refresh-feedback{margin-top:15px;font-size:14px}.notice{border-radius:9px;padding:13px 16px;border:1px solid #efdcae;background:var(--amber);color:var(--amber-ink);font-size:14px;line-height:1.65}.notice.error{background:var(--red-soft);border-color:#efcfd0;color:var(--red)}.notice.info{background:#edf5f8;border-color:#d9e7ed;color:#456578}.notice.success{background:var(--green-soft);border-color:#cce8dc;color:var(--green)}.notice strong{font-weight:650}.progress-block{margin-top:17px}.progress-heading{display:flex;justify-content:space-between;gap:14px;font-size:14px;margin-bottom:8px}.progress-track{height:7px;background:#e5edf2;border-radius:5px;overflow:hidden}.progress-fill{height:100%;background:var(--blue);width:0;transition:width .3s}.progress-detail{margin-top:7px;color:var(--muted);font-size:13px}.filters{display:grid;grid-template-columns:minmax(180px,1.1fr) minmax(180px,1.2fr) minmax(150px,.8fr) auto;align-items:end;gap:14px;margin-bottom:13px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:17px 19px}.filters select{width:100%}.filter-meta{display:flex;align-items:center;gap:18px;justify-content:space-between;margin-bottom:22px}.period-caption{font-size:13px;color:#64798c}.period-caption strong{color:#415a6f}.reference-chip{display:inline-flex;align-items:center;background:#edf1f6;color:#61758b;border-radius:7px;padding:6px 9px;font-size:12px;white-space:nowrap}.scope-label{font-size:13px;color:#7c8c9b;display:flex;align-items:center;gap:7px}.scope-label svg{width:15px;height:15px}.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:21px}.metric-card{padding:20px;background:#fff;border:1px solid var(--line);border-radius:13px;position:relative;min-height:179px;display:flex;flex-direction:column;overflow:hidden}.metric-top{display:flex;align-items:center;justify-content:space-between;gap:8px}.metric-kicker{font-size:12px;color:#7b8d9e;font-weight:550}.metric-icon{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:#edf2f7;color:#4d6b89}.metric-icon svg{width:17px;height:17px}.metric-icon.q1{background:#e6f4ef;color:#197764}.metric-icon.q2{background:#eaf1fb;color:#3c6caa}.metric-label{font-size:14px;color:#4b6074;margin-top:9px;font-weight:550}.metric-value{font-size:35px;line-height:1.15;font-weight:730;letter-spacing:-1.15px;color:var(--navy);margin-top:10px;font-variant-numeric:tabular-nums}.metric-value.pending{font-size:22px;font-weight:620;letter-spacing:-.6px;margin-top:13px}.metric-note{font-size:12px;color:#7b8b9b;margin-top:10px;line-height:1.45}.metric-link{border:0;background:transparent;color:var(--blue);padding:0;text-align:left;font-weight:600;font-size:12px;margin-top:11px;align-self:flex-start}.metric-link:hover{text-decoration:underline}.metric-card.lifetime{grid-column:span 2;min-height:90px;padding:15px 20px;display:grid;grid-template-columns:1fr auto;gap:0 18px;background:#f9fbfd}.lifetime .metric-top{grid-column:1;justify-content:flex-start}.lifetime .metric-icon{display:none}.lifetime .metric-label{margin-top:2px;font-size:14px}.lifetime .metric-value{grid-column:2;grid-row:1/3;font-size:27px;margin:0;align-self:center;text-align:right}.lifetime .metric-value.pending{font-size:19px;letter-spacing:-.4px}.lifetime .metric-note{grid-column:1/3;margin-top:5px}.lifetime .metric-link{display:none}.section-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:19px}.section-head p{margin-top:5px;color:var(--muted);font-size:13px;line-height:1.5}.section-head .search{min-width:210px;max-width:300px}.overview-detail{margin-bottom:21px}.table-scroll{overflow:auto;margin:0 -3px}table{border-collapse:collapse;width:100%;font-size:14px}thead th{text-align:left;font-size:12px;line-height:1.4;color:#75879a;background:#f7f9fc;padding:13px 12px;font-weight:600;border-bottom:1px solid var(--line);white-space:normal}tbody td{padding:16px 12px;border-bottom:1px solid #eaf0f5;vertical-align:top}tbody tr:last-child td{border-bottom:0}tbody tr:hover{background:#f7fafc}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}td.name{min-width:180px;font-weight:550}td.programme{min-width:150px;color:var(--muted);font-size:13px}td.num{min-width:82px}.empty-cell{text-align:center;color:var(--muted);padding:42px 18px!important}.table-note{color:#75869a;font-size:12px;line-height:1.65;margin-top:15px}.status{display:inline-flex;align-items:center;border-radius:6px;padding:4px 8px;line-height:1.3;font-size:12px;font-weight:550;white-space:nowrap;background:#eef2f7;color:#6b7f93}.status.complete,.status.available{background:var(--green-soft);color:var(--green)}.status.incomplete,.status.review{background:var(--amber);color:var(--amber-ink)}.status.failed{background:var(--red-soft);color:var(--red)}.status.running{background:var(--blue-soft);color:var(--blue)}.quartile{font-weight:650;color:#64758b;background:#eef2f7;display:inline-flex;padding:4px 9px;border-radius:6px;font-size:12px}.quartile.q1{color:#16735e;background:#e7f5ef}.quartile.q2{color:#3369a4;background:#eaf1fc}.analytics-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,1fr);gap:20px;margin-bottom:21px}.chart svg{display:block;width:100%;height:auto;max-height:260px}.chart-empty{display:flex;align-items:center;justify-content:center;min-height:230px;color:var(--muted);font-size:14px;text-align:center;padding:20px}.empty-chart{height:233px;position:relative;border-radius:8px;background:repeating-linear-gradient(to bottom,transparent 0,transparent 46px,#edf2f6 46px,#edf2f6 47px);overflow:hidden}.empty-chart-message{position:absolute;inset:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;color:#7a8c9d;font-size:13px}.empty-chart-message svg{width:30px;height:30px;color:#9aaebe;background:#fff}.empty-chart-message strong{font-size:14px;color:#526c82;font-weight:600;background:#fff;padding:0 8px}.empty-chart-message span{max-width:260px;background:#fff;padding:0 8px}.segmented{display:inline-flex;padding:3px;border:1px solid #e4eaf0;border-radius:8px;background:#f4f7fa;gap:2px}.segmented button{background:transparent;border:0;color:#73849a;padding:6px 9px;font-size:12px;font-weight:600;min-height:31px}.segmented button[aria-pressed=true]{background:white;color:#245a6a;box-shadow:0 1px 4px #1b334514}.chart-heading{flex-wrap:wrap;gap:12px}.quartile-content{display:flex;gap:23px;align-items:center;justify-content:center;min-height:230px;flex-wrap:wrap}.donut{height:142px;width:142px;border-radius:50%;position:relative;flex:none}.donut:after{content:"";position:absolute;inset:18px;background:#fff;border-radius:50%}.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;z-index:1}.donut-center strong{font-size:28px;line-height:1.2;letter-spacing:-.7px}.donut-center span{font-size:12px;color:#8795a5;margin-top:3px}.quartile-legend{display:grid;gap:10px;min-width:136px;font-size:13px}.legend-row{display:flex;align-items:center;justify-content:space-between;gap:18px}.legend-row label{display:flex;align-items:center;gap:8px;font-size:13px;margin:0;color:#6b7d8d;font-weight:500}.legend-key{width:9px;height:9px;border-radius:3px;display:inline-block}.legend-row strong{font-weight:650;font-variant-numeric:tabular-nums}.reference-readiness{border:1px solid var(--line);border-radius:12px;background:#fff;display:grid;grid-template-columns:1.3fr repeat(4,1fr);align-items:center;padding:18px 20px;margin-bottom:21px;gap:15px}.readiness-intro strong{font-size:14px;font-weight:650;display:block;color:#3f586d}.readiness-intro span{font-size:12px;color:#8795a4}.readiness-item{border-left:1px solid #e7edf3;padding-left:18px}.readiness-item strong{font-size:23px;color:#38556e;letter-spacing:-.6px;font-weight:680;display:block;line-height:1.2}.readiness-item span{font-size:12px;color:#7c8d9f;margin-top:4px;display:block}.method-note{display:flex;gap:12px;align-items:flex-start;padding:16px 18px;margin-bottom:21px;border:1px solid #e1e8ef;background:#f1f5f8;border-radius:11px;color:#6f8092;font-size:12px;line-height:1.65}.method-note svg{width:18px;height:18px;flex:none;color:#7f94a9;margin-top:1px}.method-note strong{color:#4f6579;font-weight:600}.definition-list{display:grid;gap:17px;font-size:14px}.definition-list strong{display:block;color:#405c73;margin-bottom:4px;font-weight:600}.definition-list p{color:var(--muted);line-height:1.65}.section-tools{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:19px}.search{position:relative;flex:1;min-width:210px}.search svg{width:17px;height:17px;position:absolute;left:12px;bottom:14px;pointer-events:none;color:#8b9aab}.search input{width:100%}.select-small{min-width:175px}.select-small select{width:100%}.view-heading{margin-bottom:21px}.view-heading h2{font-size:22px}.view-heading p{margin-top:7px;color:var(--muted);max-width:850px;font-size:14px}.paging{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:15px;margin-top:13px;color:var(--muted);font-size:13px}.paging-buttons{display:flex;gap:7px}.record-title,.faculty-link{border:0;background:none;color:#2e667c;text-align:left;padding:0;font-size:14px;font-weight:600;line-height:1.45}.record-title:hover,.faculty-link:hover{text-decoration:underline}.publication-title{min-width:280px;max-width:520px}.journal-cell{min-width:195px;max-width:310px}.metadata-line{margin-top:5px;color:#8797a6;font-size:12px;word-break:break-word}.mono{font-variant-numeric:tabular-nums;white-space:nowrap}.help-steps{display:grid;gap:23px}.help-step{display:flex;gap:13px}.help-number{width:28px;height:28px;border-radius:8px;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;flex:0 0 auto;font-weight:650;font-size:13px}.help-step p{color:var(--muted);margin-top:5px;font-size:14px;line-height:1.65}.help-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.storage-note{overflow-wrap:anywhere;background:#f4f7fa;border-radius:8px;padding:13px;font-size:12px;color:#76899c;margin-top:18px}.footer{margin-top:25px;padding-top:17px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:20px;color:#8a9aab;font-size:12px}.badge-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#8aa2b5;margin-right:6px;vertical-align:1px}.loading{padding:36px;text-align:center;color:var(--muted)}.offline-banner{display:flex;align-items:center;justify-content:space-between;gap:18px}.offline-banner p{color:var(--muted);margin-top:7px;font-size:14px;line-height:1.7;max-width:750px}.alert-area{margin-bottom:18px}.alert-area:empty{display:none}dialog{border:1px solid var(--line);border-radius:16px;width:min(830px,calc(100% - 40px));padding:0;color:var(--ink);box-shadow:0 20px 80px #20334a3d}dialog::backdrop{background:#13283f80}.dialog-head{padding:24px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:20px;justify-content:space-between}.dialog-head h2{font-size:19px;line-height:1.5;max-width:680px}.dialog-body{padding:24px;max-height:70vh;overflow:auto}.detail-grid{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px 18px;font-size:14px}.detail-grid dt{color:var(--muted)}.detail-grid dd{margin:0;overflow-wrap:anywhere}.dialog-body h3{margin:23px 0 11px}.dialog-body .notice{margin-top:18px}.category-detail{font-size:13px;color:#5b7288;border-left:3px solid #c8dfe5;padding:10px 13px;margin-top:9px;background:#f4f8fa}.break{overflow-wrap:anywhere}.sr-only{position:absolute;height:1px;width:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}.no-results{padding:24px;background:#f7f9fc;border:1px dashed #cad5e3;border-radius:9px;color:var(--muted);font-size:14px}.top-space{margin-top:20px}.thin-divider{height:1px;background:var(--line);margin:20px 0}.inline-code{font-family:inherit;background:#eef2f6;padding:2px 5px;border-radius:4px}
+    @media(min-width:1800px){.wrap{margin-right:auto;padding-right:48px;padding-left:48px}}
+    @media(max-width:1220px){:root{--rail:205px}.sidebar{padding-left:12px;padding-right:12px}.wrap{padding:29px 25px 24px}.site-header{align-items:flex-start;gap:15px}h1{font-size:28px}.header-actions{flex-wrap:wrap;justify-content:flex-end}.header-actions .btn{font-size:13px;padding:9px 11px}.metrics{gap:12px}.metric-card{padding:17px}.metric-value{font-size:31px}.metric-value.pending{font-size:20px}.analytics-grid{grid-template-columns:minmax(0,1.25fr) minmax(270px,1fr)}.quartile-content{gap:16px}.quartile-legend{min-width:120px}.donut{width:128px;height:128px}.filters{gap:10px;padding:16px}.reference-readiness{grid-template-columns:1.2fr repeat(4,1fr);gap:10px}.readiness-item{padding-left:12px}.refresh-grid{grid-template-columns:1fr;gap:18px}.key-form{max-width:680px}}
+    @media(max-width:1000px){:root{--rail:186px}.sidebar-brand{padding-left:5px}.brand-sub{font-size:11px}.nav-tab{padding:12px 10px;gap:9px;font-size:13px}.wrap{padding:25px 20px}.site-header{flex-wrap:wrap}.header-actions{justify-content:flex-start}.filters{grid-template-columns:1fr 1fr}.filters .btn{justify-self:start}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.metric-card.lifetime{grid-column:span 1;display:flex;min-height:145px}.lifetime .metric-value{font-size:26px;align-self:flex-start;text-align:left;margin-top:10px}.lifetime .metric-value.pending{font-size:20px}.analytics-grid{grid-template-columns:1fr}.chart svg{max-height:255px}.quartile-content{min-height:185px;gap:35px}.donut{width:145px;height:145px}.quartile-legend{min-width:170px}.reference-readiness{grid-template-columns:repeat(4,1fr)}.readiness-intro{grid-column:1/-1}.readiness-item{padding-left:0;border-left:0}.section-head{flex-wrap:wrap}.help-grid{grid-template-columns:1fr}.section-head .search{max-width:none}.header-meta{align-items:flex-start;flex-wrap:wrap;gap:8px}}
+    @media(max-width:720px){:root{--rail:0px}.sidebar{position:relative;width:100%;padding:16px 14px 12px;inset:auto}.sidebar-brand{padding:0 4px 15px}.brand-mark{height:36px;width:36px;border-radius:9px;font-size:13px}.brand-name{font-size:18px}.brand-sub{font-size:12px}.sidebar-label,.sidebar-bottom{display:none}.nav{flex-direction:row;gap:5px;overflow-x:auto;padding:2px 1px}.nav-tab{width:auto;flex:none;padding:10px 12px;min-height:39px;gap:7px;font-size:13px}.nav-tab svg{width:16px;height:16px}.nav-tab:last-child{margin-top:0}.nav-tab[aria-selected=true]{box-shadow:inset 0 -2px #64d0ce}.wrap{margin:0;padding:23px 16px 20px}.site-header{margin-bottom:18px;gap:17px}h1{font-size:28px}.eyebrow{font-size:11px;margin-bottom:8px}.subtitle{font-size:14px;line-height:1.6}.header-actions{gap:8px;width:100%}.header-actions .btn{font-size:13px}.last-refresh{font-size:12px}.last-refresh strong{margin-left:5px}.data-state{font-size:12px}.header-meta{margin-bottom:17px}.filters{padding:14px;gap:12px;grid-template-columns:1fr 1fr}.filter-programme,.filter-faculty{grid-column:1/-1}.filters label{font-size:13px}.filter-meta{align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:18px}.reference-chip{font-size:11px}.period-caption{font-size:12px}.metrics{gap:10px;margin-bottom:17px}.metric-card{padding:15px;min-height:180px;border-radius:12px}.metric-label{font-size:13px;margin-top:10px}.metric-kicker{font-size:11px}.metric-value{font-size:30px;margin-top:12px}.metric-value.pending{font-size:18px;letter-spacing:-.5px}.metric-note{font-size:11px}.metric-icon{width:27px;height:27px}.metric-card.lifetime{padding:14px 15px;min-height:140px}.lifetime .metric-value.pending{font-size:18px}.metric-link{font-size:12px}.panel{padding:18px}.section-head{margin-bottom:15px;gap:13px}h2{font-size:18px}.section-head .search{min-width:100%}.reference-readiness{padding:16px;grid-template-columns:1fr 1fr;gap:16px}.readiness-item strong{font-size:23px}.readiness-intro span{font-size:12px}.analytics-grid{gap:17px;margin-bottom:17px}.chart-empty,.empty-chart{min-height:220px}.chart-heading{display:block}.segmented{margin-top:12px}.overview-detail{margin-bottom:17px}.method-note{font-size:12px;padding:14px}.section-tools{gap:14px}.section-tools .search{flex-basis:100%}.select-small{min-width:135px;flex:1}.footer{flex-direction:column;gap:6px;font-size:11px}.key-form{flex-wrap:wrap}.key-field{flex-basis:100%;min-width:100%}.key-form .btn{width:100%}.offline-banner{align-items:flex-start;flex-wrap:wrap}.detail-grid{grid-template-columns:1fr;gap:4px}.detail-grid dd{margin-bottom:9px}.dialog-head,.dialog-body{padding:18px}.paging{flex-wrap:wrap}.chart svg{max-height:none}.help-step p,.definition-list p{font-size:14px}}
+    @media print{body{background:white;font-size:12px}.sidebar,.header-actions,.btn,.search,.select-small,.paging-buttons,.footer,.segmented,.metric-link,.filter-reset,.data-state{display:none!important}.wrap{max-width:none;margin:0;padding:0}.filters{border:0;padding:0;margin:15px 0;grid-template-columns:1fr 1fr 1fr}.filters select{border:0;appearance:none;padding:0;min-height:0;background:none}.panel,.metric-card{box-shadow:none;break-inside:avoid;border-color:#bfcbd8}.metrics{gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}.metric-card{min-height:110px;padding:12px}.metric-card.lifetime{grid-column:span 2;min-height:70px}.table-scroll{overflow:visible}table{font-size:10px}td,th{padding:7px!important}.site-header{margin-bottom:10px}.analytics-grid{grid-template-columns:1.3fr 1fr}.hidden{display:none!important}.reference-readiness{grid-template-columns:1.3fr repeat(4,1fr)}.readiness-intro{grid-column:auto}.metric-value.pending{font-size:17px}}
+    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+  </style>
+</head>
+<body>
+<aside class="sidebar" aria-label="Dashboard navigation">
+  <div class="sidebar-brand"><div class="brand-mark" aria-hidden="true">DEH</div><div><div class="brand-name">DEH Research</div><div class="brand-sub">Faculty analytics</div></div></div>
+  <div class="sidebar-label">WORKSPACE</div>
+  <nav class="nav" role="tablist" aria-label="Research views">
+    <button class="nav-tab" data-tab="overview" role="tab" aria-selected="true" aria-controls="view-overview" id="tab-overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Overview</button>
+    <button class="nav-tab" data-tab="publications" role="tab" aria-selected="false" aria-controls="view-publications" id="tab-publications" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg>Publications</button>
+    <button class="nav-tab" data-tab="faculty" role="tab" aria-selected="false" aria-controls="view-faculty" id="tab-faculty" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6M17 14a5 5 0 0 1 4 5v2"/></svg>Faculty directory</button>
+    <button class="nav-tab" data-tab="journals" role="tab" aria-selected="false" aria-controls="view-journals" id="tab-journals" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 4h7l2 2 2-2h7v16h-7l-2 2-2-2H3zM12 6v16M6 8h3M15 8h3"/></svg>Journal reference</button>
+    <button class="nav-tab" data-tab="help" role="tab" aria-selected="false" aria-controls="view-help" id="tab-help" tabindex="-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M4 7h16M4 17h16"/><circle cx="8" cy="7" r="3" fill="currentColor"/><circle cx="16" cy="17" r="3" fill="currentColor"/></svg>Data &amp; refresh</button>
+  </nav>
+  <div class="sidebar-bottom"><div class="sidebar-context"><p>REPORTING CALENDAR</p><strong>August – July</strong><p>One academic year.<br>A clear view of your research.</p></div><a class="sidebar-link" href="https://github.com/haitham123sa/deh-research-dashboard" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-11-2 14"/></svg>Project on GitHub</a></div>
+</aside>
+<div class="wrap">
+  <header class="site-header">
+    <div><p class="eyebrow">DEH · RESEARCH ANALYTICS</p><h1 id="page-title">Research overview</h1><p class="subtitle" id="page-subtitle">Publications, current citations and journal quality in one place.</p></div>
+    <div class="header-actions"><button id="save-report" class="btn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg>Save report</button><button id="print-report" class="btn hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7z"/></svg>Print view</button><a id="github-refresh-link" class="btn btn-primary hidden" href="https://github.com/haitham123sa/deh-research-dashboard/actions/workflows/refresh.yml" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 7a8 8 0 0 0-14-2L3 8m0-5v5h5M4 17a8 8 0 0 0 14 2l3-3m0 5v-5h-5"/></svg>Refresh data</a><button id="manage-data" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 7a8 8 0 0 0-14-2L3 8m0-5v5h5M4 17a8 8 0 0 0 14 2l3-3m0 5v-5h-5"/></svg>Refresh data</button></div>
+  </header>
+  <div class="header-meta"><span id="data-state" class="data-state" role="status">Waiting for research data</span><div id="last-refresh" class="last-refresh">Last collection<strong>Not collected yet</strong></div></div>
+  <div id="global-alert" class="alert-area" role="alert"></div>
+  <div id="storage-warning" class="alert-area" role="status"></div>
+  <div id="collection-warning" class="alert-area" role="status"></div>
+  <div id="filter-section">
+    <section class="filters" aria-label="Report filters">
+      <div class="filter-programme"><label for="programme">Programme</label><select id="programme"><option value="">All programmes</option></select></div>
+      <div class="filter-faculty"><label for="faculty-filter">Faculty member</label><select id="faculty-filter"><option value="">All faculty</option></select></div>
+      <div class="filter-year"><label for="academic-year">Academic year</label><select id="academic-year"><option value="2025">2025–2026</option></select></div>
+      <button class="btn btn-quiet filter-reset" id="clear-filters">Reset filters</button>
+    </section>
+    <div class="filter-meta"><p class="period-caption" id="period-caption">1 August 2025 – 31 July 2026</p><span class="reference-chip" id="reference-chip">JCR reference: 2025</span></div>
+  </div>
+  <main>
+    <section id="view-overview" role="tabpanel" aria-labelledby="tab-overview">
+      <div id="overview-status" class="alert-area"></div>
+      <div class="metrics" id="metric-cards"><div class="panel loading">Loading the dashboard…</div></div>
+      <div class="analytics-grid">
+        <section class="panel"><div class="section-head chart-heading"><div><h2>Research over time</h2><p id="chart-caption">Publications by academic year</p></div><div class="segmented" role="group" aria-label="Trend metric"><button id="chart-publications" aria-pressed="true">Publications</button><button id="chart-citations" aria-pressed="false">Citations</button></div></div><div id="year-chart" class="chart"></div></section>
+        <section class="panel"><div class="section-head"><div><h2>Journal quartiles</h2><p id="quartile-caption">Selected academic year · supplied JCR categories</p></div><span class="reference-chip">PUBLICATIONS</span></div><div id="quartile-chart"></div></section>
+      </div>
+      <div id="readiness-grid" class="reference-readiness" aria-label="Reference data coverage"></div>
+      <section class="panel overview-detail"><div class="section-head"><div><h2>Faculty performance</h2><p id="comparison-caption">Individual results for the selected programme and academic year.</p></div><div class="search"><label for="faculty-comparison-search" class="sr-only">Find a faculty member</label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg><input id="faculty-comparison-search" type="search" placeholder="Find a faculty member"></div></div><div id="faculty-comparison" class="table-scroll"></div><p class="table-note">Select a faculty name to explore their publications. Shared papers count once in programme and department totals.</p></section>
+      <div class="method-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></svg><div><strong>How to read this dashboard.</strong> Current citations are the accumulated citations to the selected year’s publications, not citations received during that year. <span id="quartile-definition">Quartiles use the best ranking among supplied categories in the JCR reference year.</span> Unavailable values are never treated as zero.</div></div>
+    </section>
+    <section id="view-publications" class="hidden" role="tabpanel" aria-labelledby="tab-publications">
+      <div class="view-heading"><h2>Explore publications</h2><p>One row per WoS record. Select a title for its faculty associations, source dates and journal classification.</p></div>
+      <section class="panel"><div class="section-tools"><div class="search"><label for="publication-search">Search publications</label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg><input id="publication-search" type="search" placeholder="Title, DOI, journal or WoS ID"></div><div class="select-small"><label for="publication-period">Publication period</label><select id="publication-period"><option value="selected">Selected academic year</option><option value="all">All years</option><option value="unassigned">Unassigned dates</option></select></div><div class="select-small"><label for="publication-quartile">Quartile</label><select id="publication-quartile"><option value="">All quartiles</option><option value="Q1">Q1</option><option value="Q2">Q2</option><option value="Q3">Q3</option><option value="Q4">Q4</option><option value="unavailable">Unavailable</option></select></div></div><div id="publication-warning" class="alert-area"></div><div id="publication-table" class="table-scroll"></div><div id="publication-paging" class="paging"></div></section>
+    </section>
+    <section id="view-faculty" class="hidden" role="tabpanel" aria-labelledby="tab-faculty">
+      <div class="view-heading"><h2>Your faculty directory</h2><p>Your supplied faculty roster and the identifiers used for collection. A structurally valid identifier does not independently confirm profile ownership or completeness.</p></div><section class="panel"><div class="section-tools"><div class="search"><label for="faculty-search">Search the faculty roster</label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg><input id="faculty-search" type="search" placeholder="Name, ORCID or ResearcherID"></div><span class="reference-chip" id="faculty-coverage"></span></div><div id="faculty-table" class="table-scroll"></div></section>
+    </section>
+    <section id="view-journals" class="hidden" role="tabpanel" aria-labelledby="tab-journals">
+      <div class="view-heading"><h2>Journal reference library</h2><p id="journal-coverage">The supplied journal categories and their rank-derived quartiles.</p></div><section class="panel"><div class="section-tools"><div class="search"><label for="journal-search">Search journals</label><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="6"/><path d="m15 15 6 6"/></svg><input id="journal-search" type="search" placeholder="Journal name, ISSN or eISSN"></div><div class="select-small"><label for="journal-category">JCR category</label><select id="journal-category"><option value="">All supplied categories</option></select></div><div class="select-small"><label for="journal-quartile">Quartile</label><select id="journal-quartile"><option value="">All quartiles</option><option>Q1</option><option>Q2</option><option>Q3</option><option>Q4</option></select></div></div><div id="journal-table" class="table-scroll"></div><div id="journal-paging" class="paging"></div><p class="table-note">Quartiles use the exported category rank divided by the number of journals in that category. Ties are preserved. A journal can appear in several supplied categories.</p></section>
+    </section>
+    <section id="view-help" class="hidden" role="tabpanel" aria-labelledby="tab-help">
+      <div class="view-heading"><h2>Data &amp; refresh</h2><p>Manage your source data, collect new records and understand what the figures mean.</p></div>  <section class="panel refresh-panel" aria-labelledby="refresh-heading">
+    <div id="live-refresh">
+      <div class="refresh-grid">
+        <div class="refresh-copy"><h2 id="refresh-heading">Refresh your research data</h2><p>Collect the latest available WoS records for your faculty. Your results update here when the collection finishes.</p></div>
+        <div><form id="refresh-form" class="key-form" autocomplete="off"><div class="key-field"><label for="api-key">Web of Science Starter API key</label><input id="api-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="Enter your API key" required aria-describedby="key-note"></div><button id="refresh-button" class="btn btn-primary" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 7a9 9 0 0 0-15-2L2 8m0-5v5h5M4 17a9 9 0 0 0 15 2l3-3m0 5v-5h-5"/></svg><span>Refresh from WoS</span></button></form><p class="key-note" id="key-note">Your key is used for this refresh and is not saved.</p></div>
+      </div>
+      <div id="progress-block" class="progress-block hidden" aria-live="polite"><div class="progress-heading"><strong id="progress-title">Collecting records</strong><span id="progress-count"></span></div><div class="progress-track" role="progressbar" id="progress-track" aria-label="Faculty searches processed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progress-fill" class="progress-fill"></div></div><div class="progress-detail" id="progress-detail"></div></div>
+      <div id="refresh-feedback" class="refresh-feedback" aria-live="polite"></div>
+    </div>
+    <div id="offline-refresh" class="offline-banner hidden"><div><h2 id="offline-refresh-title">Saved research report</h2><p id="offline-refresh-copy">This file contains a saved snapshot. Open the local dashboard to refresh from WoS.</p></div><span class="status" id="offline-report-badge">Offline report</span></div>
+  </section>
+<div class="help-grid"><section class="panel"><h2 id="help-refresh-title" style="margin-bottom:20px">Refresh from WoS</h2><div class="help-steps"><div class="help-step"><div class="help-number">1</div><div><h3 id="help-step1-title">Enter your API key</h3><p id="help-step1-copy">Use the Web of Science Starter key in the box above. The dashboard asks for it each time and does not save it.</p></div></div><div class="help-step"><div class="help-number">2</div><div><h3 id="help-step2-title">Click Refresh from WoS</h3><p id="help-step2-copy">Keep the local dashboard and its launcher window open while it collects the available records. Progress appears above.</p></div></div><div class="help-step"><div class="help-number">3</div><div><h3 id="help-step3-title">Review the updated results</h3><p id="help-step3-copy">The new collection appears when the run finishes. If a new run is incomplete and an older complete snapshot exists, the older complete snapshot is retained.</p></div></div></div></section><section class="panel"><h2 style="margin-bottom:15px">Select a year or save a report</h2><div class="definition-list"><div><strong>Academic year starts</strong><p>Select 2026 to see publications dated 1 August 2026 through 31 July 2027. Changing this selection filters the stored data; it does not make another API request.</p></div><div><strong>Save report</strong><p id="help-save-copy">Download one HTML file containing the collected records, faculty roster and JCR reference. Open that file in a browser to view it offline. Refresh from the local dashboard.</p></div><div><strong>Next year</strong><p>Refresh the collection, then select the next academic year. Changing the reporting year does not change the JCR reference year.</p></div></div><div id="storage-note" class="storage-note"></div></section></div>
+      <section class="panel top-space"><h2 style="margin-bottom:14px">Sources and coverage</h2><div class="definition-list"><div><strong>Web of Science</strong><p>The collector uses your supplied ResearcherIDs and ORCIDs. It retains all document types returned by the Starter API. Institutional affiliation and employment dates are not filters.</p></div><div><strong>Publication dates</strong><p>August–July assignment uses the publication source fields returned by Starter. Dates that do not establish a reliable academic year remain unassigned.</p></div><div><strong>Journal rankings</strong><p>Q1/Q2 classifications cover only the supplied JCR categories. A missing match is not treated as Q4. The reference data year is displayed beside the filters.</p></div><div><strong>Documentation</strong><p><a href="https://developer.clarivate.com/apis/wos-starter" target="_blank" rel="noopener noreferrer">WoS Starter API</a> · <a href="https://journalcitationreports.zendesk.com/hc/en-gb/articles/28351666061457-Glossary" target="_blank" rel="noopener noreferrer">JCR quartile definitions</a></p></div></div></section>
+    </section>
+  </main>
+  <footer class="footer"><span id="footer-status"><span class="badge-dot"></span>Local dashboard</span><span>DEH research reporting · August–July academic years</span></footer>
+</div>
+<dialog id="publication-dialog" aria-labelledby="publication-dialog-title"><div class="dialog-head"><h2 id="publication-dialog-title">Publication detail</h2><button class="btn btn-quiet" id="close-publication" aria-label="Close publication detail">Close</button></div><div class="dialog-body" id="publication-dialog-body"></div></dialog>
+<script id="deh-bootstrap" type="application/json">__DEH_BOOTSTRAP_JSON__</script>
+<script>
+'use strict';
+(() => {
+  const boot = JSON.parse(document.getElementById('deh-bootstrap').textContent);
+  const offline = boot.mode === 'offline';
+  const $ = id => document.getElementById(id);
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
+  const hasNumber = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
+  const fmt = value => hasNumber(value) ? value.toLocaleString() : 'Unavailable';
+  const normalized = value => String(value ?? '').toLocaleLowerCase();
+  const sameYear = (value,year) => value !== null && value !== undefined && value !== '' && Number(value) === Number(year);
+  const pageSize = 40;
+  let state = {faculty:[],journals:[],snapshot:null,job:{running:false,status:'idle'},storage_path:''};
+  let summaryIndex = new Map();
+  let publicationOwners = new Map();
+  let programme = '', facultyKey = '', year = Number.isInteger(boot.state?.snapshot?.requested_academic_year) ? boot.state.snapshot.requested_academic_year : Number.isInteger(boot.state?.refresh_context?.default_academic_year) ? boot.state.refresh_context.default_academic_year : 2025, activeTab = 'overview';
+  let chartMetric = 'publication_total';
+  let pubPage = 1, journalPage = 1, pollTimer = null, requestStarting = false;
+  let comparisonSearch = '', publicationSearch = '', facultySearch = '', journalSearch = '';
+  let publicationPeriod = 'selected', publicationQuartile = '', journalCategory = '', journalQuartile = '';
+
+  function humanStatus(value) {
+    const map = {complete:'Complete',incomplete:'Incomplete',failed:'Failed',running:'Collecting',not_queried:'Not collected',not_collected:'Not collected',idle:'Not collected',available:'Available',unavailable:'Unavailable',matched:'Matched',all_publications:'All publications',unassigned_records_may_belong_to_period:'Review dates',missing_or_invalid_issn:'Missing or invalid ISSN',ambiguous_issn:'Ambiguous journal match',matched_quartile_unavailable:'Quartile unavailable'};
+    return map[value] || String(value || 'Unavailable').replaceAll('_',' ');
+  }
+  function statusBadge(value,label) {
+    const style = ['complete','incomplete','failed','running','available'].includes(value) ? value : value === 'unassigned_records_may_belong_to_period' ? 'review' : '';
+    return `<span class="status ${style}">${esc(label || humanStatus(value))}</span>`;
+  }
+  function quartileBadge(value) { return /^Q[1-4]$/.test(value || '') ? `<span class="quartile ${esc(value.toLowerCase())}">${esc(value)}</span>` : '<span class="muted">Unavailable</span>'; }
+  function dateLabel(value) {
+    if (!value) return 'Not collected yet';
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString(undefined,{dateStyle:'medium',timeStyle:'short'});
+  }
+  function httpsLink(url,label) {
+    try { const parsed=new URL(String(url)); if(parsed.protocol !== 'https:') return esc(label); return `<a href="${esc(parsed.href)}" target="_blank" rel="noopener noreferrer">${esc(label)}</a>`; } catch { return esc(label); }
+  }
+  function doiLink(value) {
+    if(!value) return 'Not supplied';
+    const doi=String(value).replace(/^https?:\/\/(?:dx\.)?doi\.org\//i,'');
+    const url=new URL('https://doi.org/'); url.pathname='/'+doi;
+    return httpsLink(url.href,doi);
+  }
+  function group() { return facultyKey ? {level:'faculty',key:facultyKey} : programme ? {level:'programme',key:programme} : {level:'department_union',key:'all_supplied_faculty'}; }
+  function rowFor(level,key,period) { return summaryIndex.get(JSON.stringify([level,String(key),String(period)])) || null; }
+  function selectedSummary(period) { const selected=group(); return rowFor(selected.level,selected.key,period); }
+  function selectedFaculty() { return state.faculty.filter(f => (!programme || f.programme === programme) && (!facultyKey || f.faculty_key === facultyKey)); }
+  function numberCell(value) { return hasNumber(value) ? esc(fmt(value)) : `<span class="muted">${state.snapshot ? 'Unavailable' : 'Awaiting'}</span>`; }
+  function setAlert(message,kind='error') { $('global-alert').innerHTML=message ? `<div class="notice ${esc(kind)}">${esc(message)}</div>` : ''; }
+  function jcrYear() {
+    if(state.snapshot?.jcr_year) return String(state.snapshot.jcr_year);
+    const years=[...new Set(state.journals.map(j=>String(j.jcr_year || '')).filter(Boolean))];
+    return years.length ? years.join(', ') : 'Not specified';
+  }
+  function indexState() {
+    summaryIndex=new Map();
+    for(const row of state.snapshot?.summary_rows || []) summaryIndex.set(JSON.stringify([row.level,String(row.group_key),String(row.period)]),row);
+    publicationOwners=new Map();
+    const facultyByKey=new Map(state.faculty.map(f=>[f.faculty_key,f]));
+    for(const [key,uids] of Object.entries(state.snapshot?.associations || {})) for(const uid of uids || []) {
+      if(!publicationOwners.has(uid)) publicationOwners.set(uid,[]);
+      const person=facultyByKey.get(key);
+      if(person) publicationOwners.get(uid).push(person);
+    }
+  }
+  function updateControls() {
+    const programmes=[...new Set(state.faculty.map(f=>f.programme).filter(Boolean))].sort();
+    if(programme && !programmes.includes(programme)) programme='';
+    $('programme').innerHTML='<option value="">All programmes</option>'+programmes.map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join('');
+    $('programme').value=programme;
+    const availableFaculty=state.faculty.filter(f=>!programme||f.programme===programme);
+    if(facultyKey&&!availableFaculty.some(f=>f.faculty_key===facultyKey))facultyKey='';
+    $('faculty-filter').innerHTML='<option value="">All faculty</option>'+availableFaculty.map(f=>`<option value="${esc(f.faculty_key)}">${esc(f.name)}</option>`).join('');
+    $('faculty-filter').value=facultyKey;
+    const years=new Set([2025,2026,2027,2028,2029,2030,year]);
+    const current=new Date().getFullYear(); for(let y=2025;y<=Math.max(2030,current+2);y++) years.add(y);
+    for(const y of state.snapshot?.years || []) if(Number.isInteger(Number(y))) years.add(Number(y));
+    $('academic-year').innerHTML=[...years].sort((a,b)=>b-a).map(y=>`<option value="${y}">${y}–${y+1}</option>`).join('');
+    $('academic-year').value=String(year);
+    const categories=[...new Set(state.journals.map(j=>j.category).filter(Boolean))].sort();
+    $('journal-category').innerHTML='<option value="">All supplied categories</option>'+categories.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
+    $('journal-category').value=journalCategory;
+    $('period-caption').textContent=`1 August ${year}–31 July ${year+1}`;
+    $('reference-chip').textContent=`JCR reference: ${jcrYear()}`;
+    $('quartile-definition').textContent=`The best quartile among your supplied categories, using JCR data year ${jcrYear()}. Unmatched journals keep an unavailable quartile.`;
+    const timestamp=state.snapshot?.collected_at;
+    $('last-refresh').innerHTML=`Last collection<strong>${esc(dateLabel(timestamp))}</strong>`;
+    $('save-report').disabled=!state.snapshot || requestStarting || Boolean(state.job?.running);
+    const storageWarning=offline?'':String(state.storage_warning||'');
+    const storageStatus=offline?(state.snapshot?'Saved report':'Reference preview · no publication data'):storageWarning?'Results not saved':state.snapshot?'Data saved on this Mac':'Ready to collect';
+    $('footer-status').innerHTML=`<span class="badge-dot"></span>${esc(storageStatus)}${timestamp ? ' · '+esc(dateLabel(timestamp)) : ''}`;
+    $('storage-warning').innerHTML=storageWarning?`<div class="notice error">${esc(storageWarning)}</div>`:'';
+    $('storage-note').textContent=offline ? 'This file contains its own reference data and any collected research records. It can be viewed without a local app and contains no API key.' : state.storage_path ? `Data file: ${state.storage_path}` : 'The local dashboard saves the research data on this Mac.';
+    if(offline && state.refresh_context?.method==='github_actions') {
+      $('offline-refresh-copy').innerHTML=(state.snapshot?'To update this report, run <strong>Refresh research data</strong> in GitHub Actions, then download the new report. ':'Your faculty and journal references are ready. Publication data will appear after a successful <strong>Refresh research data</strong> run in GitHub Actions. The API connection must work before collection can begin. ')+httpsLink(state.refresh_context.url,'Open GitHub Actions');
+      $('offline-refresh-title').textContent=state.snapshot?'Refresh your saved report':'Publication data is pending';
+      $('offline-report-badge').textContent=state.snapshot?'Saved snapshot':'Reference preview';
+      try{const target=new URL(state.refresh_context.url);if(target.protocol==='https:'){$('github-refresh-link').setAttribute('href',target.href);$('github-refresh-link').classList.remove('hidden');$('manage-data').classList.add('hidden');}}catch{}
+      $('help-refresh-title').textContent='Refresh using GitHub';
+      $('help-step1-title').textContent='Open GitHub Actions';
+      $('help-step1-copy').textContent='Open this project in GitHub and select Actions. Your API key is stored as the repository secret WOS_API_KEY, not in this report.';
+      $('help-step2-title').textContent='Run Refresh research data';
+      $('help-step2-copy').textContent='Select the workflow, click Run workflow, and use the starting year you need. The run checks the connection before collecting publications.';
+      $('help-step3-title').textContent='Download the new report';
+      $('help-step3-copy').textContent='Open the completed workflow run and download its artifact. Unzip it and open DEH_Research_Report.html. If collection failed, read DEH_Run_Diagnostics.json.';
+      $('help-save-copy').textContent='The downloaded HTML file contains the report data. Filtering this file does not contact Web of Science. Each refresh in GitHub creates a new downloadable report.';
+    }
+
+  }
+  function renderJob() {
+    const job=state.job || {}, running=Boolean(job.running) || requestStarting;
+    $('refresh-button').disabled=running;
+    $('api-key').disabled=running;
+    $('refresh-button').querySelector('span').textContent=running ? 'Refreshing…' : 'Refresh from WoS';
+    $('progress-block').classList.toggle('hidden',!running);
+    $('save-report').disabled=!state.snapshot || running;
+    if(running) {
+      const total=hasNumber(job.total) ? job.total : state.faculty.length;
+      const done=hasNumber(job.done) ? job.done : 0;
+      const pct=total>0 ? Math.max(0,Math.min(100,done/total*100)) : 0;
+      $('progress-title').textContent=job.faculty_name ? `Collecting ${job.faculty_name}` : 'Starting WoS collection';
+      $('progress-count').textContent=`${done} of ${total} faculty processed`;
+      $('progress-fill').style.width=pct+'%';
+      $('progress-track').setAttribute('aria-valuenow',String(Math.round(pct)));
+      const fragments=[];
+      if(hasNumber(job.requests_made)) fragments.push(`${fmt(job.requests_made)} API requests`);
+      if(state.snapshot) fragments.push(`Showing the saved collection from ${dateLabel(state.snapshot.collected_at)} while this update runs.`);
+      else fragments.push('Results will appear when this collection finishes.');
+      $('progress-detail').textContent=fragments.join(' · ');
+    }
+    const currentStatus=running?'running':job.status==='failed'?'failed':state.snapshot?.run_status==='complete'?'complete':state.snapshot?'incomplete':'pending';
+    $('data-state').setAttribute('data-state',currentStatus);
+    $('data-state').textContent=running?'Updating research data':currentStatus==='failed'?'Last collection failed':currentStatus==='complete'?'Collection complete':state.snapshot?'Collection needs review':'Awaiting Web of Science data';
+    const message=job.message || '';
+    let kind='info';
+    if(job.status==='failed') kind='error';
+    else if(job.status==='incomplete') kind='';
+    else if(job.status==='complete') kind='success';
+    $('refresh-feedback').innerHTML=message && !running ? `<div class="notice ${kind}">${esc(message)}</div>` : '';
+    $('collection-warning').innerHTML=message&&!running&&['failed','incomplete'].includes(job.status)?`<div class="notice ${kind}">${esc(message)}${state.snapshot?' The saved results shown below are retained until a successful replacement is collected.':''}</div>`:'';
+  }
+  function metricNote(row,field) {
+    if(!state.snapshot) return offline?'Available after a successful collection':'Collect records in Data & refresh';
+    if(!row) return 'This period has no collection summary';
+    if(hasNumber(row[field])) {
+      if(field.startsWith('q')) {
+        const qMissing=row.publications_without_supplied_quartile;
+        return hasNumber(qMissing) && qMissing>0 ? `${fmt(qMissing)} publications have no supplied quartile` : 'Best quartile among supplied categories';
+      }
+      return field==='current_citations_total' ? 'Current count at the collection date' : 'Unique WoS records in this group';
+    }
+    if(row.retrieval_status !== 'complete') {
+      const partial=field==='current_citations_total' ? row.known_citations_sum_on_retrieved_publications : field==='q1_publications_supplied_categories' ? row.observed_q1_publications : field==='q2_publications_supplied_categories' ? row.observed_q2_publications : row.retrieved_publications_in_scope;
+      return hasNumber(partial) ? `${fmt(partial)} observed; collection incomplete` : 'Collection incomplete';
+    }
+    if(hasNumber(row.unassigned_publications_potentially_in_scope) && row.unassigned_publications_potentially_in_scope>0) return `${fmt(row.unassigned_publications_potentially_in_scope)} records need date review`;
+    if(field==='current_citations_total' && row.publications_missing_citations>0) return `${fmt(row.publications_missing_citations)} records without citation counts`;
+    return 'The required source data is unavailable';
+  }
+  function renderMetrics() {
+    const all=selectedSummary('all'), annual=selectedSummary(year);
+    const definitions=[
+      [`${year}–${year+1}`,'Publications',annual,'publication_total',false,''],
+      [`${year}–${year+1}`,'Current citations',annual,'current_citations_total',false,''],
+      [`${year}–${year+1}`,'Q1 publications',annual,'q1_publications_supplied_categories',false,'Q1'],
+      [`${year}–${year+1}`,'Q2 publications',annual,'q2_publications_supplied_categories',false,'Q2'],
+      ['ALL AVAILABLE YEARS','Total publications',all,'publication_total',true,''],
+      ['ALL AVAILABLE YEARS','Total current citations',all,'current_citations_total',true,'']
+    ];
+    $('metric-cards').innerHTML=definitions.map(([period,label,row,field,lifetime,quartile])=>{
+      const value=row?.[field], present=hasNumber(value);
+      const icon=quartile?esc(quartile):field==='current_citations_total'?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 5h6v7H6c0 3 1 5 4 6M15 5h6v7h-5c0 3 1 5 4 6"/></svg>':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/></svg>';
+      const note=present&&!lifetime&&field==='current_citations_total'?'Current citations to this year’s publications':metricNote(row,field);
+      return `<article class="metric-card ${lifetime?'lifetime':''}"><div class="metric-top"><div class="metric-kicker">${esc(period)}</div><div class="metric-icon ${quartile.toLowerCase()}" aria-hidden="true">${icon}</div></div><div class="metric-label">${esc(label)}</div><div class="metric-value ${present?'':'pending'}">${present?esc(fmt(value)):state.snapshot?'Unavailable':'Awaiting data'}</div><div class="metric-note">${esc(note)}</div>${quartile?`<button class="metric-link" data-open-quartile="${quartile}">View ${quartile} publications</button>`:''}</article>`;
+    }).join('');
+    let message='', kind='info';
+    if(!state.snapshot) {
+      message=offline?'Publication data is pending. Your faculty and journal references are ready to explore; research totals will appear after a successful collection.':'Your reference files are ready. Open Data & refresh to collect your faculty’s research records.';
+    } else if(!annual) {message=offline?(state.refresh_context?.method==='github_actions'?'This academic year is not included in the saved report. Run Refresh research data in GitHub for this starting year and download the new report.':'This academic year is not included in the saved report. Open the local dashboard, select this year and refresh.'):'This academic year has no stored summary. Open Data & refresh with this year selected to include it.';kind='info';}
+    else if(annual.retrieval_status !== 'complete') {message='The saved collection is incomplete for this selection. Complete totals are unavailable; the cards identify any observed subtotals.';kind='';}
+    else if(annual?.unassigned_publications_potentially_in_scope>0) {message=`${fmt(annual.unassigned_publications_potentially_in_scope)} records have dates that could belong to ${year}–${year+1}. Annual totals remain unavailable until those dates are resolved.`;kind='';}
+    $('overview-status').innerHTML=message?`<div class="notice ${kind}">${esc(message)}</div>`:'';
+    const unique=new Set(state.journals.map(j=>j.journal_key));
+    const categories=new Set(state.journals.map(j=>j.category).filter(Boolean));
+    const programmes=new Set(state.faculty.map(f=>f.programme).filter(Boolean));
+    $('readiness-grid').innerHTML='<div class="readiness-intro"><strong>Reference coverage</strong><span>Your supplied source files</span></div>'+[[state.faculty.length,'Faculty members'],[programmes.size,'Programmes'],[unique.size,'Reference journals'],[categories.size,'JCR categories']].map(([value,label])=>`<div class="readiness-item"><strong>${esc(fmt(value))}</strong><span>${esc(label)}</span></div>`).join('');
+  }
+  function facultyDataStatus(person,annual) {
+    const collection=state.snapshot?.states?.[person.faculty_key]?.status || 'not_collected';
+    if(collection !== 'complete') return statusBadge(collection);
+    if(!annual) return statusBadge('review','Year unavailable');
+    if(annual && annual.period_assignment_status !== 'complete') return statusBadge('unassigned_records_may_belong_to_period');
+    if(annual?.publications_missing_citations>0) return statusBadge('review','Missing citations');
+    return statusBadge('complete');
+  }
+  function renderComparison() {
+    const rows=selectedFaculty().filter(f=>normalized(f.name).includes(normalized(comparisonSearch)));
+    $('comparison-caption').textContent=`${rows.length} faculty shown · ${programme || 'All faculty'} · ${year}–${year+1}`;
+    const body=rows.map(person=>{
+      const all=rowFor('faculty',person.faculty_key,'all'), annual=rowFor('faculty',person.faculty_key,year);
+      return `<tr><td class="name"><button class="faculty-link" data-faculty-key="${esc(person.faculty_key)}">${esc(person.name)}</button></td><td class="programme">${esc(person.programme)}</td><td class="num">${numberCell(all?.publication_total)}</td><td class="num">${numberCell(all?.current_citations_total)}</td><td class="num">${numberCell(annual?.publication_total)}</td><td class="num">${numberCell(annual?.current_citations_total)}</td><td class="num">${numberCell(annual?.q1_publications_supplied_categories)}</td><td class="num">${numberCell(annual?.q2_publications_supplied_categories)}</td><td>${facultyDataStatus(person,annual)}</td></tr>`;
+    }).join('');
+    $('faculty-comparison').innerHTML=`<table><thead><tr><th>Faculty member</th><th>Programme</th><th class="num">All-year<br>publications</th><th class="num">All-year<br>citations</th><th class="num">Year<br>publications</th><th class="num">Year<br>citations</th><th class="num">Year Q1</th><th class="num">Year Q2</th><th>Status</th></tr></thead><tbody>${body||'<tr><td colspan="9" class="empty-cell">No faculty match this search.</td></tr>'}</tbody></table>`;
+  }
+  function emptyChart(title,copy) {
+    return `<div class="empty-chart"><div class="empty-chart-message"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M5 5v22h23M11 20v-6m7 6V8m7 12v-9"/></svg><strong>${esc(title)}</strong><span>${esc(copy)}</span></div></div>`;
+  }
+  function renderChart() {
+    const citations=chartMetric==='current_citations_total';
+    $('chart-publications').setAttribute('aria-pressed',String(!citations));
+    $('chart-citations').setAttribute('aria-pressed',String(citations));
+    $('chart-caption').textContent=citations?'Current citations to each academic-year publication cohort':'Publications by academic year';
+    if(!state.snapshot) {$('year-chart').innerHTML=emptyChart('Your research timeline starts here','A year-by-year comparison will appear after records are collected.');return;}
+    const groupInfo=group();
+    const observed=new Set((state.snapshot.publications||[]).map(p=>p.academic_year_start).filter(y=>Number.isInteger(y)));
+    observed.add(year);
+    const completeRows=(state.snapshot.summary_rows||[]).filter(r=>r.level===groupInfo.level&&String(r.group_key)===String(groupInfo.key)&&r.period!=='all'&&observed.has(Number(r.period))&&r.retrieval_status==='complete'&&hasNumber(r[chartMetric])).sort((a,b)=>Number(a.period)-Number(b.period));
+    const selectedIndex=completeRows.findIndex(r=>Number(r.period)===year),latestStart=Math.max(0,completeRows.length-8);
+    const windowStart=selectedIndex>=0?Math.min(selectedIndex,latestStart):latestStart;
+    const chartRows=completeRows.slice(windowStart,windowStart+8);
+    const selectedPresent=chartRows.some(r=>Number(r.period)===year);
+    const unavailableNote=`The selected academic year (${year}–${year+1}) has unavailable ${citations?'citation':'publication'} totals and is not charted.`;
+    if(!chartRows.length){$('year-chart').innerHTML=emptyChart('Complete totals are needed',unavailableNote);return;}
+    const maximum=Math.max(...chartRows.map(r=>r[chartMetric]));
+    if(maximum===0){$('year-chart').innerHTML=`<div class="chart-empty"><div>The completed collection records zero ${citations?'current citations':'publications'} in the displayed academic years.<p class="table-note">${esc(selectedPresent?'The selected academic year is included.':unavailableNote)}</p></div></div>`;return;}
+    const width=620,height=245,left=46,right=16,top=22,bottom=44,plotHeight=height-top-bottom,plotWidth=width-left-right,step=plotWidth/chartRows.length,barWidth=Math.min(47,step*.53),maxScale=Math.max(1,Math.ceil(maximum));
+    const grid=[0,.5,1].map(f=>{const y=top+plotHeight*(1-f),value=Math.round(maxScale*f);return `<line x1="${left}" x2="${width-right}" y1="${y}" y2="${y}" stroke="#e7edf3" stroke-dasharray="3 4"/><text x="${left-10}" y="${y+4}" text-anchor="end" fill="#8a9cad" font-size="12">${fmt(value)}</text>`;}).join('');
+    const bars=chartRows.map((r,i)=>{const value=r[chartMetric],h=value/maxScale*plotHeight,x=left+i*step+(step-barWidth)/2,y=top+plotHeight-h,label=`${r.period}–${String(Number(r.period)+1).slice(-2)}`;return `<rect x="${x}" y="${y}" width="${barWidth}" height="${h}" rx="5" fill="${Number(r.period)===year?'#247f8b':'#b4cbd8'}"/><text x="${x+barWidth/2}" y="${y-7}" text-anchor="middle" fill="#42647b" font-size="12">${fmt(value)}</text><text x="${x+barWidth/2}" y="${height-15}" text-anchor="middle" fill="${Number(r.period)===year?'#247f8b':'#7b90a2'}" font-size="12" font-weight="${Number(r.period)===year?600:400}">${label}</text>`;}).join('');
+    const description=chartRows.map(r=>`${r.period}–${Number(r.period)+1}: ${r[chartMetric]} ${citations?'current citations':'publications'}`).join('; ');
+    $('year-chart').innerHTML=`<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(description)}" xmlns="http://www.w3.org/2000/svg">${grid}${bars}</svg><p class="table-note">Only complete ${citations?'citation':'publication'} totals are shown. ${esc(selectedPresent?'The selected academic year is highlighted.':unavailableNote)}</p>`;
+  }
+  function renderQuartiles() {
+    $('quartile-caption').textContent=`${year}–${year+1} publications · JCR ${jcrYear()}`;
+    const row=selectedSummary(year);
+    if(!state.snapshot){$('quartile-chart').innerHTML=emptyChart('Journal quality, at a glance','Quartiles will appear when collected publications are matched to your JCR reference.');return;}
+    if(!row||row.retrieval_status!=='complete'||![row.publication_total,row.q1_publications_supplied_categories,row.q2_publications_supplied_categories,row.publications_without_supplied_quartile].every(hasNumber)){$('quartile-chart').innerHTML=emptyChart('Classification is incomplete','A distribution requires complete publication and quartile totals.');return;}
+    const total=row.publication_total,q1=row.q1_publications_supplied_categories,q2=row.q2_publications_supplied_categories,unknown=row.publications_without_supplied_quartile,other=total-q1-q2-unknown;
+    if(other<0){$('quartile-chart').innerHTML=emptyChart('Classification needs review','The supplied totals do not form a consistent distribution.');return;}
+    const items=[['Q1',q1,'#247f75'],['Q2',q2,'#5b91c4'],['Q3 / Q4',other,'#b2c3d5'],['Unclassified',unknown,'#e1e7ed']];
+    let progress=0;const stops=items.map(([,count,color])=>{const from=progress;progress+=total?count/total*100:0;return `${color} ${from}% ${progress}%`;});
+    $('quartile-chart').innerHTML=`<div class="quartile-content"><div class="donut" style="background:${total?'conic-gradient('+stops.join(',')+')':'#e8eef3'}" role="img" aria-label="${esc(items.map(([label,count])=>label+': '+count).join('; '))}"><div class="donut-center"><strong>${fmt(total)}</strong><span>publications</span></div></div><div class="quartile-legend">${items.map(([label,count,color])=>`<div class="legend-row"><label><span class="legend-key" style="background:${color}"></span>${label}</label><strong>${fmt(count)}</strong></div>`).join('')}</div></div><p class="table-note">Best quartile among supplied categories. Unclassified journals are not Q4.</p>`;
+  }
+  function publicationRows() {
+    const selectedKeys=new Set(selectedFaculty().map(f=>f.faculty_key));
+    const visibleIds=new Set();
+    for(const key of selectedKeys) for(const uid of state.snapshot?.associations?.[key] || []) visibleIds.add(uid);
+    return (state.snapshot?.publications||[]).filter(p=>{
+      if(!visibleIds.has(p.uid)) return false;
+      if(publicationPeriod==='selected'&&!sameYear(p.academic_year_start,year)) return false;
+      if(publicationPeriod==='unassigned'&&p.academic_year_start!==null&&p.academic_year_start!==undefined&&p.academic_year_start!=='') return false;
+      if(publicationQuartile==='unavailable'&&/^Q[1-4]$/.test(p.best_supplied_quartile||'')) return false;
+      if(publicationQuartile&&publicationQuartile!=='unavailable'&&p.best_supplied_quartile!==publicationQuartile) return false;
+      return normalized([p.title,p.doi,p.journal_name,p.uid].join(' ')).includes(normalized(publicationSearch));
+    }).sort((a,b)=>(Number(b.assignment_year)||0)-(Number(a.assignment_year)||0)||String(a.title).localeCompare(String(b.title)));
+  }
+  function pagingHtml(total,page,id) {
+    const pages=Math.max(1,Math.ceil(total/pageSize));
+    const start=total?((page-1)*pageSize+1):0,end=Math.min(page*pageSize,total);
+    return `<span>${start.toLocaleString()}–${end.toLocaleString()} of ${total.toLocaleString()} records</span><div class="paging-buttons"><button class="btn btn-quiet" data-page="${id}" data-delta="-1" ${page<=1?'disabled':''}>Previous</button><span style="padding:8px">${page} / ${pages}</span><button class="btn btn-quiet" data-page="${id}" data-delta="1" ${page>=pages?'disabled':''}>Next</button></div>`;
+  }
+  function renderPublications() {
+    const rows=publicationRows(); pubPage=Math.max(1,Math.min(pubPage,Math.ceil(rows.length/pageSize)||1));
+    const visible=rows.slice((pubPage-1)*pageSize,pubPage*pageSize);
+    const body=visible.map(p=>`<tr><td class="publication-title"><button class="record-title" data-publication="${esc(p.uid)}">${esc(p.title||'Title unavailable')}</button><div class="metadata-line">${esc(p.uid)}${p.doi?' · DOI '+esc(p.doi):''}</div></td><td class="journal-cell">${esc(p.journal_name||'Journal unavailable')}</td><td class="mono">${esc(p.academic_year||'Unassigned')}<div class="metadata-line">${esc([p.publish_month_raw,p.publish_year_raw].filter(v=>v!==null&&v!==undefined&&v!=='').join(' '))}</div></td><td class="num">${numberCell(p.current_wos_citations)}</td><td>${quartileBadge(p.best_supplied_quartile)}</td></tr>`).join('');
+    const empty=state.snapshot?'No publication records match these filters.':offline?'No publication records have been collected yet. A successful GitHub collection will populate this table.':'No publication data has been collected. Open Data & refresh to start a collection.';
+    $('publication-table').innerHTML=`<table><thead><tr><th>Publication</th><th>Journal</th><th>Academic year</th><th class="num">Current<br>citations</th><th>Quartile</th></tr></thead><tbody>${body||`<tr><td colspan="5" class="empty-cell">${esc(empty)}</td></tr>`}</tbody></table>`;
+    $('publication-paging').innerHTML=pagingHtml(rows.length,pubPage,'publications');
+    const summary=selectedSummary(publicationPeriod==='selected'?year:'all');
+    const warning=state.snapshot&&!summary?(state.refresh_context?.method==='github_actions'?'No summary is stored for this period. Run Refresh research data in GitHub for this starting year and download the new report.':'No summary is stored for this period. Refresh from the local dashboard with this year selected.'):state.snapshot&&summary.retrieval_status!=='complete'?'These are retrieved records from an incomplete collection. The row count is not a complete publication total.':publicationPeriod==='selected'&&summary?.unassigned_publications_potentially_in_scope>0?`${fmt(summary.unassigned_publications_potentially_in_scope)} additional records have unresolved dates that could belong to this year. Use Unassigned dates to review them.`:'';
+    $('publication-warning').innerHTML=warning?`<div class="notice">${esc(warning)}</div>`:'';
+  }
+  function renderFaculty() {
+    const rows=selectedFaculty().filter(f=>normalized([f.name,f.orcid,f.researcher_id].join(' ')).includes(normalized(facultySearch)));
+    $('faculty-coverage').textContent=`${rows.length} faculty shown`;
+    $('faculty-table').innerHTML=`<table><thead><tr><th>Faculty member</th><th>Programme</th><th>ORCID</th><th>ResearcherID</th><th>Collection status</th></tr></thead><tbody>${rows.map(f=>`<tr><td class="name">${esc(f.name)}</td><td>${esc(f.programme)}</td><td class="mono">${f.orcid?httpsLink('https://orcid.org/'+encodeURIComponent(f.orcid),f.orcid):'<span class="muted">Not supplied</span>'}</td><td class="mono">${esc(f.researcher_id||'Not supplied')}<div class="metadata-line">${!f.researcher_id?'Collection uses the supplied ORCID.':''}</div></td><td>${statusBadge(state.snapshot?.states?.[f.faculty_key]?.status||'not_collected')}</td></tr>`).join('')||'<tr><td colspan="5" class="empty-cell">No faculty match this search.</td></tr>'}</tbody></table>`;
+  }
+  function renderJournals() {
+    const unique=new Set(state.journals.map(j=>j.journal_key));
+    $('journal-coverage').textContent=`${state.journals.length.toLocaleString()} category records covering ${unique.size.toLocaleString()} journals. JCR data year ${jcrYear()}. These are reference journals, not faculty publication counts.`;
+    const rows=state.journals.filter(j=>(!journalCategory||j.category===journalCategory)&&(!journalQuartile||j.derived_jif_quartile===journalQuartile)&&normalized([j.journal_name,j.issn,j.eissn].join(' ')).includes(normalized(journalSearch))).sort((a,b)=>String(a.journal_name).localeCompare(String(b.journal_name))||String(a.category).localeCompare(String(b.category)));
+    journalPage=Math.max(1,Math.min(journalPage,Math.ceil(rows.length/pageSize)||1));
+    const body=rows.slice((journalPage-1)*pageSize,journalPage*pageSize).map(j=>`<tr><td class="journal-cell">${esc(j.journal_name)}<div class="metadata-line">ISSN ${esc(j.issn||'not supplied')} · eISSN ${esc(j.eissn||'not supplied')}</div></td><td>${esc(j.category)}</td><td class="num">${esc(j.jif??'Unavailable')}</td><td class="num mono">${esc(j.jif_rank)} / ${esc(j.category_journals)}</td><td>${quartileBadge(j.derived_jif_quartile)}</td><td class="num">${esc(j.jcr_year||'Unspecified')}</td></tr>`).join('');
+    $('journal-table').innerHTML=`<table><thead><tr><th>Journal</th><th>JCR category</th><th class="num">JIF</th><th class="num">Category rank</th><th>Derived<br>quartile</th><th class="num">JCR year</th></tr></thead><tbody>${body||'<tr><td colspan="6" class="empty-cell">No journals match these filters.</td></tr>'}</tbody></table>`;
+    $('journal-paging').innerHTML=pagingHtml(rows.length,journalPage,'journals');
+  }
+  function renderAll() {updateControls();renderJob();renderMetrics();renderComparison();renderChart();renderQuartiles();renderPublications();renderFaculty();renderJournals();}
+  function setState(next) {state={faculty:[],journals:[],snapshot:null,job:{running:false,status:'idle'},storage_path:'',...next};indexState();renderAll();if(state.job?.running&&!offline)schedulePoll();}
+  function changeTab(tab) {
+    activeTab=tab;
+    document.querySelectorAll('.nav-tab').forEach(button=>{const selected=button.dataset.tab===tab;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;});
+    for(const name of ['overview','publications','faculty','journals','help']) $('view-'+name).classList.toggle('hidden',name!==tab);
+    $('filter-section').classList.toggle('hidden',tab==='journals'||tab==='help');
+    const titles={overview:['Research overview','Publications, current citations and journal quality in one place.'],publications:['Publication explorer','Explore the research behind your department’s results.'],faculty:['Faculty directory','Your researchers, identifiers and collection coverage.'],journals:['Journal reference','Explore the JCR data used to classify your publications.'],help:['Data & refresh','Keep your research dashboard current and understand its sources.']};
+    const heading=titles[tab]||titles.overview;$('page-title').textContent=heading[0];$('page-subtitle').textContent=heading[1];
+  }
+  async function api(path,options={}) {
+    const response=await fetch(path,{...options,cache:'no-store',credentials:'same-origin',headers:{'X-DEH-Token':boot.token,...(options.headers||{})}});
+    if(!response.ok){let message=`Request failed (${response.status}).`;try{const details=await response.json();if(details.error)message=String(details.error);}catch{}throw new Error(message);}
+    return response;
+  }
+  async function loadState() {const response=await api('/api/state');setState(await response.json());}
+  function schedulePoll() {if(!pollTimer&&!offline)pollTimer=setTimeout(pollStatus,1000);}
+  async function pollStatus() {
+    pollTimer=null;
+    try {
+      const response=await api('/api/status');const latest=await response.json();state.job=latest.job||state.job;renderJob();
+      const currentVersion=state.snapshot?.version??0;
+      if(!state.job.running||String(latest.snapshot_version??0)!==String(currentVersion)) await loadState();
+      if(state.job.running) schedulePoll();
+    } catch(error) {state.job={...state.job,running:false};renderJob();setAlert('The local dashboard could not be reached. Keep its launcher window open, then reload this page. '+error.message);}
+  }
+  async function startRefresh(event) {
+    event.preventDefault();if(offline||requestStarting||state.job?.running)return;
+    let key=$('api-key').value.trim();
+    if(!key){$('api-key').focus();return;}
+    setAlert('');requestStarting=true;renderJob();
+    try {
+      const response=await api('/api/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:key,academic_year_start:year})});
+      key='';$('api-key').value='';
+      try{await response.json();}catch{}
+      await loadState();requestStarting=false;renderJob();schedulePoll();
+    } catch(error) {requestStarting=false;renderJob();setAlert(error.message);} finally {key='';}
+  }
+  async function saveReport() {
+    if(offline||!state.snapshot)return;
+    const button=$('save-report');button.disabled=true;
+    try {const response=await api('/api/report');const blob=await response.blob();const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='DEH_Research_Report.html';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
+    catch(error){setAlert('The report could not be downloaded. '+error.message);}
+    finally {button.disabled=!state.snapshot||Boolean(state.job?.running);}
+  }
+  function showPublication(uid) {
+    const publication=(state.snapshot?.publications||[]).find(p=>p.uid===uid);if(!publication)return;
+    const owners=publicationOwners.get(uid)||[];
+    const rows=[['WoS record',publication.wos_url?httpsLink(publication.wos_url,publication.uid):esc(publication.uid)],['Journal',esc(publication.journal_name||'Unavailable')],['DOI',doiLink(publication.doi)],['Faculty',esc(owners.map(f=>f.name).join(', ')||'No faculty association available')],['Publication date (source)',esc([publication.publish_month_raw,publication.publish_year_raw].filter(v=>v!==null&&v!==undefined&&v!=='').join(' ')||'Unavailable')],['Academic year',esc(publication.academic_year||'Unassigned')],['Date status',esc(humanStatus(publication.date_status))],['Current WoS citations',numberCell(publication.current_wos_citations)],['Citation status',esc(humanStatus(publication.citation_status))],['Document types',esc(publication.document_types||'Unavailable')],['ISSN / eISSN',esc([publication.issn,publication.eissn].filter(Boolean).join(' / ')||'Unavailable')],['Best supplied quartile',quartileBadge(publication.best_supplied_quartile)],['JCR data year',esc(publication.jcr_data_year||'Unavailable')],['Journal match',esc(humanStatus(publication.journal_match_status))],['Last retrieved',esc(dateLabel(publication.last_retrieved_at))]];
+    let categories=[];try{categories=typeof publication.jcr_category_records==='string'?JSON.parse(publication.jcr_category_records):publication.jcr_category_records||[];}catch{}
+    $('publication-dialog-title').textContent=publication.title||'Title unavailable';
+    $('publication-dialog-body').innerHTML=`<dl class="detail-grid">${rows.map(([key,value])=>`<dt>${esc(key)}</dt><dd>${value}</dd>`).join('')}</dl>${categories.length?'<h3>Supplied JCR category records</h3>'+categories.map(j=>`<div class="category-detail"><strong>${esc(j.category)}</strong><br>JIF ${esc(j.jif)} · rank ${esc(j.jif_rank)} / ${esc(j.category_journals)} · ${esc(j.derived_jif_quartile)} · JCR ${esc(j.jcr_year||'unspecified')}</div>`).join(''):''}${publication.citation_count_changed_during_run||publication.publication_metadata_changed_during_run?'<div class="notice">This record changed during collection. The latest retrieved observation is shown.</div>':''}`;
+    const dialog=$('publication-dialog');if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
+  }
+  function closePublication(){const dialog=$('publication-dialog');if(typeof dialog.close==='function')dialog.close();else dialog.removeAttribute('open');}
+
+  document.querySelector('.nav').addEventListener('click',event=>{const button=event.target.closest('[data-tab]');if(button)changeTab(button.dataset.tab);});
+  document.querySelector('.nav').addEventListener('keydown',event=>{const tabs=[...document.querySelectorAll('.nav-tab')],index=tabs.indexOf(document.activeElement);if(index<0)return;let next=index;if(event.key==='ArrowRight'||event.key==='ArrowDown')next=(index+1)%tabs.length;else if(event.key==='ArrowLeft'||event.key==='ArrowUp')next=(index-1+tabs.length)%tabs.length;else if(event.key==='Home')next=0;else if(event.key==='End')next=tabs.length-1;else return;event.preventDefault();changeTab(tabs[next].dataset.tab);tabs[next].focus();});
+  $('programme').addEventListener('change',event=>{programme=event.target.value;facultyKey='';pubPage=1;renderAll();});
+  $('faculty-filter').addEventListener('change',event=>{facultyKey=event.target.value;pubPage=1;renderAll();});
+  $('clear-filters').addEventListener('click',()=>{programme='';facultyKey='';comparisonSearch='';$('faculty-comparison-search').value='';pubPage=1;renderAll();});
+  $('manage-data').addEventListener('click',()=>changeTab('help'));
+  $('chart-publications').addEventListener('click',()=>{chartMetric='publication_total';renderChart();});
+  $('chart-citations').addEventListener('click',()=>{chartMetric='current_citations_total';renderChart();});
+  $('academic-year').addEventListener('change',event=>{year=Number(event.target.value);pubPage=1;renderAll();});
+  $('refresh-form').addEventListener('submit',startRefresh);
+  $('save-report').addEventListener('click',saveReport);
+  $('print-report').addEventListener('click',()=>window.print());
+  $('faculty-comparison-search').addEventListener('input',event=>{comparisonSearch=event.target.value;renderComparison();});
+  $('publication-search').addEventListener('input',event=>{publicationSearch=event.target.value;pubPage=1;renderPublications();});
+  $('publication-period').addEventListener('change',event=>{publicationPeriod=event.target.value;pubPage=1;renderPublications();});
+  $('publication-quartile').addEventListener('change',event=>{publicationQuartile=event.target.value;pubPage=1;renderPublications();});
+  $('faculty-search').addEventListener('input',event=>{facultySearch=event.target.value;renderFaculty();});
+  $('journal-search').addEventListener('input',event=>{journalSearch=event.target.value;journalPage=1;renderJournals();});
+  $('journal-category').addEventListener('change',event=>{journalCategory=event.target.value;journalPage=1;renderJournals();});
+  $('journal-quartile').addEventListener('change',event=>{journalQuartile=event.target.value;journalPage=1;renderJournals();});
+  document.addEventListener('click',event=>{const page=event.target.closest('[data-page]');if(page&&!page.disabled){if(page.dataset.page==='publications'){pubPage+=Number(page.dataset.delta);renderPublications();}else{journalPage+=Number(page.dataset.delta);renderJournals();}}const publication=event.target.closest('[data-publication]');if(publication)showPublication(publication.dataset.publication);
+    const faculty=event.target.closest('[data-faculty-key]');if(faculty){facultyKey=faculty.dataset.facultyKey;publicationPeriod='selected';publicationQuartile='';$('publication-period').value='selected';$('publication-quartile').value='';pubPage=1;renderAll();changeTab('publications');}
+    const quartile=event.target.closest('[data-open-quartile]');if(quartile){publicationPeriod='selected';publicationQuartile=quartile.dataset.openQuartile;$('publication-period').value='selected';$('publication-quartile').value=publicationQuartile;pubPage=1;renderPublications();changeTab('publications');}});
+  $('close-publication').addEventListener('click',closePublication);
+  $('publication-dialog').addEventListener('click',event=>{if(event.target===$('publication-dialog')){const bounds=$('publication-dialog').getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)closePublication();}});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape')closePublication();});
+  if(offline){$('live-refresh').classList.add('hidden');$('offline-refresh').classList.remove('hidden');$('save-report').classList.add('hidden');$('print-report').classList.remove('hidden');setState(boot.state||{});}
+  else loadState().catch(error=>{renderAll();setAlert('The local dashboard could not load its data. Keep the launcher window open and reload this page. '+error.message);});
+})();
+</script>
+</body>
+</html>
