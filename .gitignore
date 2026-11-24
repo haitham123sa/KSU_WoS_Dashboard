@@ -1,0 +1,26 @@
+# Credentials and local settings
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+credentials.json
+secrets.json
+
+# Collected records and generated deliverables belong in private run artifacts.
+results/
+dist/
+DEH_Research_Data.json
+DEH_Research_Report.html
+DEH_Run_Diagnostics.json
+.DEH_Data_*.tmp
+
+# Python and operating-system temporary files
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.DS_Store
+.pytest_cache/
+node_modules/
+browser_tmp/
