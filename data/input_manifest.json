@@ -1,0 +1,103 @@
+{
+  "purpose": "Prepared inputs, not retrieved faculty publication or citation results",
+  "academic_year_start_month": 8,
+  "example_academic_year_start": "2025-08-01",
+  "example_academic_year_end": "2026-07-31",
+  "citation_definition": "Current WoS Core Collection times cited at collection time",
+  "jcr_data_year": 2025,
+  "quartile_definition": "JIF quartile derived from each exported category rank; ceil(4*rank/category_size)",
+  "quartile_summary_scope": "Best among supplied categories only, not global best",
+  "quartile_formula_source": "https://journalcitationreports.zendesk.com/hc/en-gb/articles/28351666061457-Glossary",
+  "faculty_records": 23,
+  "programme_counts": {
+    "Dental Technology": 13,
+    "Dental Hygiene": 10
+  },
+  "jcr_category_rows": 668,
+  "unique_journals": 662,
+  "category_quartile_counts": {
+    "DENTISTRY, ORAL SURGERY & MEDICINE": {
+      "Q1": 43,
+      "Q2": 43,
+      "Q3": 37,
+      "Q4": 42
+    },
+    "MATERIALS SCIENCE, BIOMATERIALS": {
+      "Q1": 14,
+      "Q2": 15,
+      "Q3": 14,
+      "Q4": 15
+    },
+    "PUBLIC, ENVIRONMENTAL & OCCUPATIONAL HEALTH": {
+      "Q1": 113,
+      "Q3": 112,
+      "Q2": 117,
+      "Q4": 103
+    }
+  },
+  "best_quartile_counts_within_supplied_categories": {
+    "Q1": 170,
+    "Q2": 173,
+    "Q3": 162,
+    "Q4": 157
+  },
+  "source_files": [
+    {
+      "name": "DENTISTRY, ORAL SURGERY & MEDICINE(1).csv",
+      "sha256": "77ed67b57b7118a0c64113cbfd17db3b3013423103cab2b9b80eaf4269e65137"
+    },
+    {
+      "name": "Faculty.xlsx",
+      "sha256": "f5cc637aad5bfffa9a3b825551898d10f6ba08788c89a49cade9d4ae4649a160"
+    },
+    {
+      "name": "MATERIALS SCIENCE, BIOMATERIALS.csv",
+      "sha256": "910cea616f6c59eb6c299981b78c2aac1559b2c1340d383d3919e22c6287a839"
+    },
+    {
+      "name": "PUBLIC, ENVIRONMENTAL & OCCUPATIONAL HEALTH.csv",
+      "sha256": "7c0d7ebb9eb1bda0112b14d2390996f896dfa693a1f7f81970e60e38a5315358"
+    }
+  ],
+  "jcr_exports": [
+    {
+      "file": "DENTISTRY, ORAL SURGERY & MEDICINE(1).csv",
+      "export_metadata": "Journal Data Filtered By:  Selected Categories: DENTISTRY, ORAL SURGERY & MEDICINE Selected Editions: SCIE;SSCI;AHCI;ESCI Selected JCR Year: 2025 Selected Category Schema: WOS Selected Open Access: N Indicator: Custom",
+      "jcr_year": 2025,
+      "journal_category_rows": 165
+    },
+    {
+      "file": "MATERIALS SCIENCE, BIOMATERIALS.csv",
+      "export_metadata": "Journal Data Filtered By:  Selected Categories: MATERIALS SCIENCE, BIOMATERIALS Selected Editions: SCIE;SSCI;AHCI;ESCI Selected JCR Year: 2025 Selected Category Schema: WOS Selected Open Access: N Indicator: Custom",
+      "jcr_year": 2025,
+      "journal_category_rows": 58
+    },
+    {
+      "file": "PUBLIC, ENVIRONMENTAL & OCCUPATIONAL HEALTH.csv",
+      "export_metadata": "Journal Data Filtered By:  Selected Categories: PUBLIC, ENVIRONMENTAL & OCCUPATIONAL HEALTH Selected Editions: SCIE;SSCI;AHCI;ESCI Selected JCR Year: 2025 Selected Category Schema: WOS Selected Open Access: N Indicator: Custom",
+      "jcr_year": 2025,
+      "journal_category_rows": 445
+    }
+  ],
+  "normalization_notes": [
+    {
+      "name": "Abdullah alshsehri",
+      "source_row": 5,
+      "note": "ResearcherID missing; search by supplied ORCID."
+    },
+    {
+      "name": "Rasha Nesha Alotaibi",
+      "source_row": 24,
+      "note": "Trimmed leading nonbreaking whitespace from ResearcherID."
+    }
+  ],
+  "live_wos_collection_status": "Not run: API credential not configured in this workspace",
+  "limitations": [
+    "Identifier checks confirm structure, not ownership or live profile completeness.",
+    "Only three JCR categories were provided; other publication journals can remain unmatched.",
+    "Other category assignments of matched journals are not covered.",
+    "The source JCR Total Citations column is not a publication-level citation metric and is not used for faculty citation totals.",
+    "2025 JCR data applied to an academic-year cohort is a fixed ranking-year view, not necessarily rank at publication.",
+    "JIF source values <0.1 are preserved without substituting zero."
+  ]
+}
