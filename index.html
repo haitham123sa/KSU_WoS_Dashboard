@@ -74,7 +74,7 @@
     <div id="live-refresh">
       <div class="refresh-grid">
         <div class="refresh-copy"><h2 id="refresh-heading">Refresh your research data</h2><p>Collect the latest available WoS records for your faculty. Your results update here when the collection finishes.</p></div>
-        <div><form id="refresh-form" class="key-form" autocomplete="off"><div class="key-field"><label for="api-key">Web of Science Starter API key</label><input id="api-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="Enter your API key" required aria-describedby="key-note"></div><button id="refresh-button" class="btn btn-primary" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 7a9 9 0 0 0-15-2L2 8m0-5v5h5M4 17a9 9 0 0 0 15 2l3-3m0 5v-5h-5"/></svg><span>Refresh from WoS</span></button></form><p class="key-note" id="key-note">Your key is used for this refresh and is not saved.</p></div>
+        <div><form id="refresh-form" class="key-form" autocomplete="off"><div class="key-field"><label for="api-key">Dashboard refresh access code</label><input id="api-key" type="password" autocomplete="off" spellcheck="false" autocapitalize="off" placeholder="Enter your refresh access code" required aria-describedby="key-note"></div><button id="refresh-button" class="btn btn-primary" type="submit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 7a9 9 0 0 0-15-2L2 8m0-5v5h5M4 17a9 9 0 0 0 15 2l3-3m0 5v-5h-5"/></svg><span>Refresh from WoS</span></button></form><p class="key-note" id="key-note">Your Web of Science key is stored securely in the backend. This access code only authorizes a refresh.</p></div>
       </div>
       <div id="progress-block" class="progress-block hidden" aria-live="polite"><div class="progress-heading"><strong id="progress-title">Collecting records</strong><span id="progress-count"></span></div><div class="progress-track" role="progressbar" id="progress-track" aria-label="Faculty searches processed" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progress-fill" class="progress-fill"></div></div><div class="progress-detail" id="progress-detail"></div></div>
       <div id="refresh-feedback" class="refresh-feedback" aria-live="polite"></div>
@@ -94,6 +94,9 @@
 (() => {
   const boot = JSON.parse(document.getElementById('deh-bootstrap').textContent);
   const offline = boot.mode === 'offline';
+  const remote = boot.mode === 'remote';
+  let remoteRun = null;
+  try { remoteRun = JSON.parse(sessionStorage.getItem('deh-refresh-run') || 'null'); } catch {}
   const $ = id => document.getElementById(id);
   const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
   const hasNumber = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
@@ -179,10 +182,21 @@
     $('last-refresh').innerHTML=`Last collection<strong>${esc(dateLabel(timestamp))}</strong>`;
     $('save-report').disabled=!state.snapshot || requestStarting || Boolean(state.job?.running);
     const storageWarning=offline?'':String(state.storage_warning||'');
-    const storageStatus=offline?(state.snapshot?'Saved report':'Reference preview · no publication data'):storageWarning?'Results not saved':state.snapshot?'Data saved on this Mac':'Ready to collect';
+    const storageStatus=offline?(state.snapshot?'Saved report':'Reference preview · no publication data'):remote?(state.snapshot?'Published research report':'Connected to refresh service'):storageWarning?'Results not saved':state.snapshot?'Data saved on this Mac':'Ready to collect';
     $('footer-status').innerHTML=`<span class="badge-dot"></span>${esc(storageStatus)}${timestamp ? ' · '+esc(dateLabel(timestamp)) : ''}`;
     $('storage-warning').innerHTML=storageWarning?`<div class="notice error">${esc(storageWarning)}</div>`:'';
     $('storage-note').textContent=offline ? 'This file contains its own reference data and any collected research records. It can be viewed without a local app and contains no API key.' : state.storage_path ? `Data file: ${state.storage_path}` : 'The local dashboard saves the research data on this Mac.';
+    if(remote) {
+      $('help-refresh-title').textContent='Refresh securely from this dashboard';
+      $('help-step1-title').textContent='Enter your dashboard access code';
+      $('help-step1-copy').textContent='Use the private refresh access code configured for this dashboard. Your Web of Science API key stays in the secure backend and is never entered into this public page.';
+      $('help-step2-title').textContent='Click Refresh from WoS';
+      $('help-step2-copy').textContent='The dashboard securely starts the background collection and checks its progress here. You do not need to open GitHub.';
+      $('help-step3-title').textContent='View the updated report';
+      $('help-step3-copy').textContent='When collection and publication finish, the dashboard reloads automatically with the latest publications, citations and journal classifications.';
+      $('help-save-copy').textContent='Download the current dashboard as a self-contained HTML report. Refreshing data is handled by the secure backend.';
+      $('storage-note').textContent='Research results are published to this dashboard after a successful collection. The Web of Science API key is held in the secure backend.';
+    }
     if(offline && state.refresh_context?.method==='github_actions') {
       $('offline-refresh-copy').innerHTML=(state.snapshot?'To update this report, run <strong>Refresh research data</strong> in GitHub Actions, then download the new report. ':'Your faculty and journal references are ready. Publication data will appear after a successful <strong>Refresh research data</strong> run in GitHub Actions. The API connection must work before collection can begin. ')+httpsLink(state.refresh_context.url,'Open GitHub Actions');
       $('offline-refresh-title').textContent=state.snapshot?'Refresh your saved report':'Publication data is pending';
@@ -386,20 +400,50 @@
     const heading=titles[tab]||titles.overview;$('page-title').textContent=heading[0];$('page-subtitle').textContent=heading[1];
   }
   async function api(path,options={}) {
-    const response=await fetch(path,{...options,cache:'no-store',credentials:'same-origin',headers:{'X-DEH-Token':boot.token,...(options.headers||{})}});
+    const headers={...(options.headers||{})};
+    if(remote) headers.Authorization=`Bearer ${sessionStorage.getItem('deh-dashboard-token')||''}`;
+    else headers['X-DEH-Token']=boot.token;
+    const base=remote?String(boot.api_base||'').replace(/\\/$/,''):'';
+    const response=await fetch(base+path,{...options,cache:'no-store',credentials:remote?'omit':'same-origin',headers});
     if(!response.ok){let message=`Request failed (${response.status}).`;try{const details=await response.json();if(details.error)message=String(details.error);}catch{}throw new Error(message);}
     return response;
   }
-  async function loadState() {const response=await api('/api/state');setState(await response.json());}
-  function schedulePoll() {if(!pollTimer&&!offline)pollTimer=setTimeout(pollStatus,1000);}
+  async function loadState() {
+    if(remote)return;
+    const response=await api('/api/state');setState(await response.json());
+  }
+  function schedulePoll() {if(!pollTimer&&!offline)pollTimer=setTimeout(pollStatus,remote?5000:1000);}
   async function pollStatus() {
     pollTimer=null;
     try {
+      if(remote) {
+        if(!remoteRun){return;}
+        const query=remoteRun.run_id?`run_id=${encodeURIComponent(remoteRun.run_id)}`:`started_at=${encodeURIComponent(remoteRun.started_at||'')}`;
+        const response=await api('/status?'+query);
+        const latest=await response.json();
+        state.job=latest.job||state.job;renderJob();
+        if(latest.status==='complete') {
+          sessionStorage.removeItem('deh-refresh-run');remoteRun=null;
+          state.job={running:false,status:'complete',done:23,total:23,message:'Research data refreshed and published. Reloading the latest dashboard…'};
+          renderJob();setAlert('The new research report is published. Reloading the dashboard now.');
+          setTimeout(()=>window.location.reload(),2500);return;
+        }
+        if(latest.status==='failed'||latest.status==='publish_failed') {
+          sessionStorage.removeItem('deh-refresh-run');remoteRun=null;
+          state.job={...(latest.job||{}),running:false,status:'failed'};renderJob();
+          setAlert(latest.job?.message||'The refresh did not complete. The previous published report has been preserved.');return;
+        }
+        schedulePoll();return;
+      }
       const response=await api('/api/status');const latest=await response.json();state.job=latest.job||state.job;renderJob();
       const currentVersion=state.snapshot?.version??0;
       if(!state.job.running||String(latest.snapshot_version??0)!==String(currentVersion)) await loadState();
       if(state.job.running) schedulePoll();
-    } catch(error) {state.job={...state.job,running:false};renderJob();setAlert('The local dashboard could not be reached. Keep its launcher window open, then reload this page. '+error.message);}
+    } catch(error) {
+      if(remote&&error.message.includes('access code')) sessionStorage.removeItem('deh-dashboard-token');
+      state.job={...state.job,running:false};renderJob();
+      setAlert(remote?'The dashboard backend could not be reached. Check the refresh access code and try again. '+error.message:'The local dashboard could not be reached. Keep its launcher window open, then reload this page. '+error.message);
+    }
   }
   async function startRefresh(event) {
     event.preventDefault();if(offline||requestStarting||state.job?.running)return;
@@ -407,6 +451,16 @@
     if(!key){$('api-key').focus();return;}
     setAlert('');requestStarting=true;renderJob();
     try {
+      if(remote) {
+        sessionStorage.setItem('deh-dashboard-token',key);
+        const response=await api('/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({academic_year_start:year})});
+        const result=await response.json();
+        remoteRun={run_id:result.run_id?String(result.run_id):'',started_at:result.started_at||new Date().toISOString()};
+        sessionStorage.setItem('deh-refresh-run',JSON.stringify(remoteRun));
+        $('api-key').value='';
+        state.job={running:true,status:'running',done:0,total:23,message:result.message||'Collection queued. Preparing the Web of Science searches.'};
+        requestStarting=false;renderJob();schedulePoll();return;
+      }
       const response=await api('/api/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:key,academic_year_start:year})});
       key='';$('api-key').value='';
       try{await response.json();}catch{}
@@ -414,9 +468,14 @@
     } catch(error) {requestStarting=false;renderJob();setAlert(error.message);} finally {key='';}
   }
   async function saveReport() {
-    if(offline||!state.snapshot)return;
+    if(!state.snapshot)return;
     const button=$('save-report');button.disabled=true;
-    try {const response=await api('/api/report');const blob=await response.blob();const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='DEH_Research_Report.html';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
+    try {
+      let blob;
+      if(remote) blob=new Blob(['<!doctype html>\\n'+document.documentElement.outerHTML],{type:'text/html;charset=utf-8'});
+      else {const response=await api('/api/report');blob=await response.blob();}
+      const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='DEH_Research_Report.html';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
+    }
     catch(error){setAlert('The report could not be downloaded. '+error.message);}
     finally {button.disabled=!state.snapshot||Boolean(state.job?.running);}
   }
@@ -458,6 +517,10 @@
   $('publication-dialog').addEventListener('click',event=>{if(event.target===$('publication-dialog')){const bounds=$('publication-dialog').getBoundingClientRect();if(event.clientX<bounds.left||event.clientX>bounds.right||event.clientY<bounds.top||event.clientY>bounds.bottom)closePublication();}});
   document.addEventListener('keydown',event=>{if(event.key==='Escape')closePublication();});
   if(offline){$('live-refresh').classList.add('hidden');$('offline-refresh').classList.remove('hidden');$('save-report').classList.add('hidden');$('print-report').classList.remove('hidden');setState(boot.state||{});}
+  else if(remote){
+    setState(boot.state||{});
+    if(remoteRun){state.job={running:true,status:'running',done:0,total:23,message:'Checking the current collection status…'};renderJob();schedulePoll();}
+  }
   else loadState().catch(error=>{renderAll();setAlert('The local dashboard could not load its data. Keep the launcher window open and reload this page. '+error.message);});
 })();
 </script>
