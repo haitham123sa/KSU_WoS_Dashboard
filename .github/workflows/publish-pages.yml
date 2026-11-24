@@ -1,0 +1,94 @@
+name: Publish DEH dashboard to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-pages.yml'
+      - 'src/**'
+      - 'scripts/**'
+      - 'data/**'
+  workflow_run:
+    workflows: ["Refresh research data"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Optional successful Refresh research data run ID; leave blank to publish the latest successful report"
+        required: false
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deh-pages
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    if: >
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the project
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Prepare published dashboard
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+          INPUT_RUN_ID: ${{ inputs.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p site
+          run_id="$WORKFLOW_RUN_ID"
+          if [[ "$EVENT_NAME" == "workflow_dispatch" && -n "$INPUT_RUN_ID" ]]; then
+            run_id="$INPUT_RUN_ID"
+          elif [[ "$EVENT_NAME" == "push" || ( "$EVENT_NAME" == "workflow_dispatch" && -z "$run_id" ) ]]; then
+            run_id="$(gh run list --workflow refresh.yml --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+          fi
+
+          if [[ -n "$run_id" && "$run_id" != "null" ]]; then
+            echo "Publishing report from successful collection run $run_id"
+            gh run download "$run_id" --repo "$GITHUB_REPOSITORY" --dir site
+          fi
+
+          report="$(find site -type f -name 'DEH_Research_Report.html' -print -quit)"
+          if [[ -n "$report" ]]; then
+            cp "$report" site/index.html
+          else
+            echo "No successful collection report was found; publishing a clearly labelled reference-only preview."
+            python scripts/build_preview.py --output site/index.html
+          fi
+
+          # Do not publish raw collection JSON, diagnostics, API credentials, or source inputs.
+          find site -mindepth 1 -maxdepth 1 ! -name index.html -exec rm -rf {} +
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
