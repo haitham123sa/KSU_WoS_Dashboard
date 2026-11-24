@@ -1,0 +1,85 @@
+name: Refresh research data
+
+on:
+  workflow_dispatch:
+    inputs:
+      academic_year_start:
+        description: 'Starting year: 2025 means Aug 2025–Jul 2026. Leave blank for the current academic year.'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deh-wos-collection
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Collect publications and generate the dashboard
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out the project
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+
+      - name: Check the API, collect data, and generate the report
+        env:
+          WOS_API_KEY: ${{ secrets.WOS_API_KEY }}
+          DEH_ACADEMIC_YEAR_START: ${{ inputs.academic_year_start }}
+        shell: bash
+        run: |
+          args=(--output-dir results)
+          if [[ -n "$DEH_ACADEMIC_YEAR_START" ]]; then
+            args+=(--academic-year-start "$DEH_ACADEMIC_YEAR_START")
+          fi
+          python scripts/refresh.py "${args[@]}"
+
+      - name: Show the collection result
+        if: always()
+        timeout-minutes: 1
+        shell: bash
+        run: |
+          python - <<'PY'
+          import html
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path('results/DEH_Run_Diagnostics.json')
+          summary = ['## DEH research dashboard\n']
+          if path.exists():
+              result = json.loads(path.read_text(encoding='utf-8'))
+              for label, key in [('Status', 'status'), ('Result', 'message'), ('Next step', 'next_action')]:
+                  summary.append(f'<p><strong>{label}:</strong> {html.escape(str(result.get(key, "Unavailable")))}</p>\n')
+              if result.get('report_file'):
+                  summary.append('\nDownload the artifact below, unzip it, and open **DEH_Research_Report.html**. Check the report status before using totals.\n')
+              else:
+                  summary.append('\nA dashboard was not produced. Download the diagnostics artifact below to review the failure.\n')
+          else:
+              summary.append('The run did not produce diagnostics. Open the failed workflow step above.\n')
+          summary.append('\nArtifacts are kept for up to 90 days, subject to repository limits. Download reports you want to keep.\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as stream:
+              stream.write('\n'.join(summary))
+          PY
+
+      - name: Save the dashboard and diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: deh-research-dashboard-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            results/DEH_Research_Report.html
+            results/DEH_Research_Data.json
+            results/DEH_Run_Diagnostics.json
+          if-no-files-found: warn
+          retention-days: 90
