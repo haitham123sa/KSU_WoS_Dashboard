@@ -1,0 +1,12 @@
+{
+  "live_api_tested": false,
+  "network_requests_during_validation": 0,
+  "offline_self_tests_passed": 5,
+  "faculty_records_validated": 23,
+  "journal_category_rows_validated": 668,
+  "unique_journals": 662,
+  "all_668_workbook_quartile_formulas_checked": true,
+  "workbook_formula_errors_found": 0,
+  "all_three_workbook_sheets_visually_reviewed": true,
+  "exported_workbook_summary_values_verified": true
+}
