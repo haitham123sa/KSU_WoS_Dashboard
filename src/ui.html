@@ -223,16 +223,25 @@
     if(running) {
       const total=hasNumber(job.total) ? job.total : state.faculty.length;
       const done=hasNumber(job.done) ? job.done : 0;
-      const pct=total>0 ? Math.max(0,Math.min(100,done/total*100)) : 0;
-      $('progress-title').textContent=job.faculty_name ? `Collecting ${job.faculty_name}` : 'Starting WoS collection';
-      $('progress-count').textContent=`${done} of ${total} faculty processed`;
-      $('progress-fill').style.width=pct+'%';
-      $('progress-track').setAttribute('aria-valuenow',String(Math.round(pct)));
-      const fragments=[];
-      if(hasNumber(job.requests_made)) fragments.push(`${fmt(job.requests_made)} API requests`);
-      if(state.snapshot) fragments.push(`Showing the saved collection from ${dateLabel(state.snapshot.collected_at)} while this update runs.`);
-      else fragments.push('Results will appear when this collection finishes.');
-      $('progress-detail').textContent=fragments.join(' · ');
+      if(remote) {
+        const publishing=job.status==='publishing';
+        $('progress-title').textContent=publishing?'Publishing the updated dashboard':(job.message||'Collecting Web of Science records');
+        $('progress-count').textContent=publishing?'23 of 23 faculty collected':'Background collection in progress';
+        $('progress-fill').style.width=publishing?'92%':'45%';
+        $('progress-track').setAttribute('aria-valuenow',publishing?'92':'45');
+        $('progress-detail').textContent=state.snapshot?`The previous report remains visible from ${dateLabel(state.snapshot.collected_at)} until the new report is published.`:'The dashboard will update automatically when collection and publishing finish.';
+      } else {
+        const pct=total>0 ? Math.max(0,Math.min(100,done/total*100)) : 0;
+        $('progress-title').textContent=job.faculty_name ? `Collecting ${job.faculty_name}` : 'Starting WoS collection';
+        $('progress-count').textContent=`${done} of ${total} faculty processed`;
+        $('progress-fill').style.width=pct+'%';
+        $('progress-track').setAttribute('aria-valuenow',String(Math.round(pct)));
+        const fragments=[];
+        if(hasNumber(job.requests_made)) fragments.push(`${fmt(job.requests_made)} API requests`);
+        if(state.snapshot) fragments.push(`Showing the saved collection from ${dateLabel(state.snapshot.collected_at)} while this update runs.`);
+        else fragments.push('Results will appear when this collection finishes.');
+        $('progress-detail').textContent=fragments.join(' · ');
+      }
     }
     const currentStatus=running?'running':job.status==='failed'?'failed':state.snapshot?.run_status==='complete'?'complete':state.snapshot?'incomplete':'pending';
     $('data-state').setAttribute('data-state',currentStatus);
