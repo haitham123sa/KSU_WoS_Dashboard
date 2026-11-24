@@ -44,11 +44,12 @@ def save_diagnostics(path, value, secret):
 
 
 def github_refresh_context():
-    repository = os.environ.get("GITHUB_REPOSITORY", "")
-    result = {"method": "github_actions", "workflow_name": "Refresh research data"}
-    if re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
-        result["url"] = "https://github.com/" + repository + "/actions"
-    return result
+    return {
+        "mode": "remote",
+        "method": "cloudflare_worker",
+        "workflow_name": "Refresh research data",
+        "api_base": "https://deh-research-api.almansour-h.workers.dev"
+    }
 
 
 def run_refresh(output_dir, academic_year_start, diagnostics_only=False, *, api_key=None, preflight_runner=None, app_module=None):
