@@ -1,0 +1,88 @@
+name: Test WoS connection
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/test-connection.yml'
+      - 'scripts/check_auth.py'
+
+permissions:
+  contents: read
+
+# Both API workflows share this group to avoid overlapping requests.
+concurrency:
+  group: deh-wos-collection
+  cancel-in-progress: false
+
+jobs:
+  connection:
+    name: Check the Starter API and one faculty search
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the project
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+
+      - name: Test the WoS Starter connection
+        env:
+          WOS_API_KEY: ${{ secrets.WOS_API_KEY }}
+        run: python scripts/refresh.py --diagnostics-only --output-dir results
+
+      - name: Compare rejected authentication with independent requests
+        if: failure()
+        env:
+          WOS_API_KEY: ${{ secrets.WOS_API_KEY }}
+        run: python scripts/check_auth.py --output-dir results
+
+      - name: Show the connection result
+        if: always()
+        timeout-minutes: 1
+        shell: bash
+        run: |
+          python - <<'PY'
+          import html
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path('results/DEH_Run_Diagnostics.json')
+          summary = ['## WoS connection check\n']
+          if path.exists():
+              result = json.loads(path.read_text(encoding='utf-8'))
+              for label, key in [('Status', 'status'), ('Result', 'message'), ('Next step', 'next_action')]:
+                  summary.append(f'<p><strong>{label}:</strong> {html.escape(str(result.get(key, "Unavailable")))}</p>\n')
+              summary.append('\nDownload the diagnostics artifact below for details.\n')
+          else:
+              summary.append('The check did not produce diagnostics. Open the failed workflow step above.\n')
+          auth_path = Path('results/DEH_Authentication_Check.json')
+          if auth_path.exists():
+              auth = json.loads(auth_path.read_text(encoding='utf-8'))
+              summary.append('\n### Independent authentication check\n')
+              for label, key in [('Result', 'message'), ('Next step', 'next_action')]:
+                  summary.append(f'<p><strong>{label}:</strong> {html.escape(str(auth.get(key, "Unavailable")))}</p>\n')
+              for check in auth.get('checks', []):
+                  detail = f"{check.get('client', 'client')} / {check.get('version', 'version')}: HTTP {check.get('http_status', 'unavailable')} — {check.get('status', 'unavailable')}"
+                  summary.append(f'<p>{html.escape(detail)}</p>\n')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as stream:
+              stream.write('\n'.join(summary))
+          PY
+
+      - name: Save connection diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: deh-connection-diagnostics-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            results/DEH_Run_Diagnostics.json
+            results/DEH_Authentication_Check.json
+          if-no-files-found: warn
+          retention-days: 90
