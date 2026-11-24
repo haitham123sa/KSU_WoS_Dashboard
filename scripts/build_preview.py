@@ -35,10 +35,10 @@ def build(output=DEFAULT_OUTPUT, academic_year_start=None, *, app_module=None):
     output = Path(output).expanduser().resolve()
     module = app_module or load_app()
     context = {
-        "method": "github_actions",
+        "mode": "remote",
+        "method": "cloudflare_worker",
         "workflow_name": "Refresh research data",
-        "url": REPOSITORY_URL + "/actions/workflows/refresh.yml",
-        "connection_url": REPOSITORY_URL + "/actions/workflows/test-connection.yml",
+        "api_base": "https://deh-research-api.almansour-h.workers.dev",
         "preview": True,
         "default_academic_year": year,
         "preview_message": "No Web of Science publication data has been collected. Faculty and journal references are available to explore.",
