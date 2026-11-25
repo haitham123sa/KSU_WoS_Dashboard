@@ -193,7 +193,7 @@ class JournalLookup:
         return result
 
 
-def publication_period(source):
+def _verified_publication_period(source):
     """Return source year, academic-year start, and a transparent precision/status.
 
     Never invent a day or translate seasons into months. Named month ranges
@@ -249,6 +249,25 @@ def publication_period(source):
     if len(possible) != 1:
         return year, None, "month_range_crosses_academic_year"
     return year, next(iter(possible)), "month_range"
+
+
+def publication_period(source):
+    year, academic_year, status = _verified_publication_period(source)
+    if academic_year is not None:
+        return year, academic_year, status
+    for field in ("earlyAccessDate", "onlinePublicationDate", "earlyAccessMonth"):
+        value = source.get(field)
+        if value:
+            online_year, online_ay, _ = _verified_publication_period({"publishYear": source.get("earlyAccessYear", ""), "publishMonth": value})
+            if online_ay is not None:
+                return online_year, online_ay, "estimated_from_online_date"
+    if year is None:
+        raw = str(source.get("publishYear", "") or "")
+        if re.fullmatch(r"\d{4}", raw) and 1000 <= int(raw) <= 9999:
+            year = int(raw)
+    if year is None:
+        return None, None, status
+    return year, year - 1, "estimated_june_" + status
 
 
 def wos_citations(record):
@@ -715,7 +734,7 @@ def main(argv=None):
     lookup, publications = JournalLookup(journals), {}
     associations = {f["faculty_key"]: set() for f in faculties}
     states = {f["faculty_key"]: {"status": "not_queried", "expected_records": None, "retrieved_unique": 0, "pages": 0, "errors": []} for f in faculties}
-    manifest = {"collector_version": "1.0", "started_at": now_utc(), "api_endpoint": ENDPOINT, "database": "WOS", "document_type_filter": None, "academic_year_rule": "1 August through 31 July inclusive", "citation_definition": "Current WOS citation counts at record retrieval; not citations received within the academic year", "quartile_scope": SCOPE, "quartile_basis": "Input derived_jif_quartile, derived from exported JIF category rank", "input_validation": validation, "faculty_input_sha256": hashlib.sha256(args.faculty.read_bytes()).hexdigest(), "journal_input_sha256": hashlib.sha256(args.journals.read_bytes()).hexdigest(), "faculty_searches": states, "limitations": ["Identifier-query completeness is not proof of complete faculty career coverage or correct ownership.", "Records are retrieved sequentially; the collection is not an atomic database snapshot.", "Journal quartiles cover supplied categories only and are not global best quartiles.", "JCR year remains unspecified where source input does not establish it.", "Season-only and ambiguous publication dates remain unassigned.", "All document types returned by WoS are retained.", "Publication affiliations are not validated as institutional output."]}
+    manifest = {"collector_version": "1.0", "started_at": now_utc(), "api_endpoint": ENDPOINT, "database": "WOS", "document_type_filter": None, "academic_year_rule": "1 August through 31 July inclusive", "citation_definition": "Current WOS citation counts at record retrieval; not citations received within the academic year", "quartile_scope": SCOPE, "quartile_basis": "Input derived_jif_quartile, derived from exported JIF category rank", "input_validation": validation, "faculty_input_sha256": hashlib.sha256(args.faculty.read_bytes()).hexdigest(), "journal_input_sha256": hashlib.sha256(args.journals.read_bytes()).hexdigest(), "faculty_searches": states, "limitations": ["Identifier-query completeness is not proof of complete faculty career coverage or correct ownership.", "Records are retrieved sequentially; the collection is not an atomic database snapshot.", "Journal quartiles cover supplied categories only and are not global best quartiles.", "JCR year remains unspecified where source input does not establish it.", "Ambiguous dates with a known year use an estimated June date unless a usable online date exists; records without a usable year remain unassigned.", "All document types returned by WoS are retained.", "Publication affiliations are not validated as institutional output."]}
 
     def checkpoint():
         manifest.update(updated_at=now_utc(), requests_made=client.requests, unique_publications_retrieved=len(publications))
