@@ -188,8 +188,8 @@
     $('storage-note').textContent=offline ? 'This file contains its own reference data and any collected research records. It can be viewed without a local app and contains no API key.' : state.storage_path ? `Data file: ${state.storage_path}` : 'The local dashboard saves the research data on this Mac.';
     if(remote) {
       $('help-refresh-title').textContent='Refresh securely from this dashboard';
-      $('help-step1-title').textContent='Enter your dashboard access code';
-      $('help-step1-copy').textContent='Use the private refresh access code configured for this dashboard. Your Web of Science API key stays in the secure backend and is never entered into this public page.';
+      $('help-step1-title').textContent='Click Refresh from WoS';
+      $('help-step1-copy').textContent='No access code is required. Your Web of Science API key remains in the secure backend.';
       $('help-step2-title').textContent='Click Refresh from WoS';
       $('help-step2-copy').textContent='The dashboard securely starts the background collection and checks its progress here. You do not need to open GitHub.';
       $('help-step3-title').textContent='View the updated report';
@@ -410,8 +410,7 @@
   }
   async function api(path,options={}) {
     const headers={...(options.headers||{})};
-    if(remote) headers.Authorization=`Bearer ${sessionStorage.getItem('deh-dashboard-token')||''}`;
-    else headers['X-DEH-Token']=boot.token;
+    if(!remote) headers['X-DEH-Token']=boot.token;
     const base=remote?String(boot.api_base||'').replace(/\/$/,''):'';
     const response=await fetch(base+path,{...options,cache:'no-store',credentials:remote?'omit':'same-origin',headers});
     if(!response.ok){let message=`Request failed (${response.status}).`;try{const details=await response.json();if(details.error)message=String(details.error);}catch{}throw new Error(message);}
@@ -451,17 +450,16 @@
     } catch(error) {
       if(remote&&error.message.includes('access code')) sessionStorage.removeItem('deh-dashboard-token');
       state.job={...state.job,running:false};renderJob();
-      setAlert(remote?'The dashboard backend could not be reached. Check the refresh access code and try again. '+error.message:'The local dashboard could not be reached. Keep its launcher window open, then reload this page. '+error.message);
+      setAlert(remote?'The dashboard backend could not be reached. Try again later. '+error.message:'The local dashboard could not be reached. Keep its launcher window open, then reload this page. '+error.message);
     }
   }
   async function startRefresh(event) {
     event.preventDefault();if(offline||requestStarting||state.job?.running)return;
     let key=$('api-key').value.trim();
-    if(!key){$('api-key').focus();return;}
+    if(!remote&&!key){$('api-key').focus();return;}
     setAlert('');requestStarting=true;renderJob();
     try {
       if(remote) {
-        sessionStorage.setItem('deh-dashboard-token',key);
         const response=await api('/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({academic_year_start:year})});
         const result=await response.json();
         remoteRun={run_id:result.run_id?String(result.run_id):'',started_at:result.started_at||new Date().toISOString()};
@@ -527,6 +525,9 @@
   document.addEventListener('keydown',event=>{if(event.key==='Escape')closePublication();});
   if(offline){$('live-refresh').classList.add('hidden');$('offline-refresh').classList.remove('hidden');$('save-report').classList.add('hidden');$('print-report').classList.remove('hidden');setState(boot.state||{});}
   else if(remote){
+    $('api-key').required=false;
+    $('api-key').closest('.key-field')?.classList.add('hidden');
+    $('api-key').classList.add('hidden');
     setState(boot.state||{});
     if(remoteRun){state.job={running:true,status:'running',done:0,total:23,message:'Checking the current collection status…'};renderJob();schedulePoll();}
   }
