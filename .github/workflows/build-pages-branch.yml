@@ -1,14 +1,6 @@
 name: Build dashboard for GitHub Pages (branch source)
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'scripts/**'
-      - 'data/faculty.csv'
-      - 'data/journal_categories.csv'
-      - '.github/workflows/build-pages-branch.yml'
   workflow_dispatch:
 
 permissions:
