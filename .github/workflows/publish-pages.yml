@@ -2,13 +2,6 @@
 name: Publish DEH dashboard to GitHub Pages
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/publish-pages.yml'
-      - 'src/**'
-      - 'scripts/**'
-      - 'data/**'
   workflow_run:
     workflows: ["Refresh research data"]
     types: [completed]
@@ -22,8 +15,6 @@ on:
 permissions:
   actions: read
   contents: write
-  pages: write
-  id-token: write
 
 concurrency:
   group: deh-pages
@@ -36,9 +27,6 @@ jobs:
       (github.event.workflow_run.conclusion == 'success' &&
        github.event.workflow_run.head_branch == 'main')
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Check out the project
         uses: actions/checkout@v4
@@ -94,19 +82,3 @@ jobs:
             git push origin HEAD:main
           fi
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
-          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-        with:
-          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
