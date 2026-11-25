@@ -4,3 +4,7 @@ compatibility_date = "2026-11-24"
 workers_dev = true
 
 # Deploy automatically from the main branch.
+
+[vars]
+GH_OWNER = "haitham123sa"
+GH_REPO = "KSU_WoS_Dashboard"
