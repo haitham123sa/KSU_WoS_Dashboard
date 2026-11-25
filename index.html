@@ -412,7 +412,7 @@
     const headers={...(options.headers||{})};
     if(remote) headers.Authorization=`Bearer ${sessionStorage.getItem('deh-dashboard-token')||''}`;
     else headers['X-DEH-Token']=boot.token;
-    const base=remote?String(boot.api_base||'').replace(/\\/$/,''):'';
+    const base=remote?String(boot.api_base||'').replace(/\/$/,''):'';
     const response=await fetch(base+path,{...options,cache:'no-store',credentials:remote?'omit':'same-origin',headers});
     if(!response.ok){let message=`Request failed (${response.status}).`;try{const details=await response.json();if(details.error)message=String(details.error);}catch{}throw new Error(message);}
     return response;
