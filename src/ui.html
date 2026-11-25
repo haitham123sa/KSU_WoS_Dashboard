@@ -15,7 +15,15 @@
     @media print{body{background:white;font-size:12px}.sidebar,.header-actions,.btn,.search,.select-small,.paging-buttons,.footer,.segmented,.metric-link,.filter-reset,.data-state{display:none!important}.wrap{max-width:none;margin:0;padding:0}.filters{border:0;padding:0;margin:15px 0;grid-template-columns:1fr 1fr 1fr}.filters select{border:0;appearance:none;padding:0;min-height:0;background:none}.panel,.metric-card{box-shadow:none;break-inside:avoid;border-color:#bfcbd8}.metrics{gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}.metric-card{min-height:110px;padding:12px}.metric-card.lifetime{grid-column:span 2;min-height:70px}.table-scroll{overflow:visible}table{font-size:10px}td,th{padding:7px!important}.site-header{margin-bottom:10px}.analytics-grid{grid-template-columns:1.3fr 1fr}.hidden{display:none!important}.reference-readiness{grid-template-columns:1.3fr repeat(4,1fr)}.readiness-intro{grid-column:auto}.metric-value.pending{font-size:17px}}
     @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
   </style>
-</head>
+<style>
+body.single-page .sidebar,body.single-page #view-help,body.single-page .key-field,body.single-page #manage-data,body.single-page #github-refresh-link{display:none!important}
+body.single-page .wrap{margin:0 auto!important;width:100%!important;max-width:1500px;padding:24px!important}
+body.single-page{display:block!important}
+body.single-page main>section{margin-bottom:32px;scroll-margin-top:20px}
+body.single-page .header-actions{flex-wrap:wrap}
+body.single-page #refresh-form{display:flex;margin:0}
+body.single-page #progress-track{display:none}
+</style></head>
 <body>
 <aside class="sidebar" aria-label="Dashboard navigation">
   <div class="sidebar-brand"><div class="brand-mark" aria-hidden="true">DEH</div><div><div class="brand-name">DEH Research</div><div class="brand-sub">Faculty analytics</div></div></div>
@@ -226,7 +234,7 @@
       if(remote) {
         const publishing=job.status==='publishing';
         $('progress-title').textContent=publishing?'Publishing the updated dashboard':(job.message||'Collecting Web of Science records');
-        $('progress-count').textContent=publishing?'23 of 23 faculty collected':'Background collection in progress';
+        $('progress-count').textContent=publishing?'Collection finished':'Background collection in progress';
         $('progress-fill').style.width=publishing?'92%':'45%';
         $('progress-track').setAttribute('aria-valuenow',publishing?'92':'45');
         $('progress-detail').textContent=state.snapshot?`The previous report remains visible from ${dateLabel(state.snapshot.collected_at)} until the new report is published.`:'The dashboard will update automatically when collection and publishing finish.';
@@ -401,6 +409,7 @@
   function renderAll() {updateControls();renderJob();renderMetrics();renderComparison();renderChart();renderQuartiles();renderPublications();renderFaculty();renderJournals();}
   function setState(next) {state={faculty:[],journals:[],snapshot:null,job:{running:false,status:'idle'},storage_path:'',...next};indexState();renderAll();if(state.job?.running&&!offline)schedulePoll();}
   function changeTab(tab) {
+    if(remote){$('view-'+tab)?.scrollIntoView({behavior:'smooth',block:'start'});return;}
     activeTab=tab;
     document.querySelectorAll('.nav-tab').forEach(button=>{const selected=button.dataset.tab===tab;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;});
     for(const name of ['overview','publications','faculty','journals','help']) $('view-'+name).classList.toggle('hidden',name!==tab);
@@ -525,6 +534,14 @@
   document.addEventListener('keydown',event=>{if(event.key==='Escape')closePublication();});
   if(offline){$('live-refresh').classList.add('hidden');$('offline-refresh').classList.remove('hidden');$('save-report').classList.add('hidden');$('print-report').classList.remove('hidden');setState(boot.state||{});}
   else if(remote){
+    document.body.classList.add('single-page');
+    const refresh=$('live-refresh');
+    $('manage-data').classList.add('hidden');
+    document.querySelector('.header-actions').prepend($('refresh-form'));
+    document.querySelector('.header-meta').after($('progress-block'),$('refresh-feedback'));
+    for(const name of ['overview','publications','faculty','journals']) $('view-'+name).classList.remove('hidden');
+    $('page-title').textContent='DEH Research Dashboard';
+    publicationPeriod='all';$('publication-period').value='all';
     $('api-key').required=false;
     $('api-key').closest('.key-field')?.classList.add('hidden');
     $('api-key').classList.add('hidden');
