@@ -24,10 +24,6 @@ function cors(request) {
   return origin;
 }
 
-function authorized(request, env) {
-  const supplied = request.headers.get("Authorization") || "";
-  return Boolean(env.DASHBOARD_TOKEN) && supplied === `Bearer ${env.DASHBOARD_TOKEN}`;
-}
 
 function ghHeaders(env) {
   return {
@@ -59,7 +55,6 @@ async function listRuns(env, workflowFile) {
 }
 
 async function startRefresh(request, env, origin) {
-  if (!authorized(request, env)) return response({ error: "Enter your dashboard refresh access code." }, 401, origin);
   if (!env.GH_TOKEN || !env.GH_OWNER || !env.GH_REPO) return response({ error: "The backend is not fully configured. Ask the administrator to finish its GitHub connection." }, 503, origin);
 
   let body = {};
@@ -94,7 +89,6 @@ async function startRefresh(request, env, origin) {
 }
 
 async function refreshStatus(request, env, origin) {
-  if (!authorized(request, env)) return response({ error: "Your dashboard session has expired. Enter the refresh access code again." }, 401, origin);
   if (!env.GH_TOKEN) return response({ error: "The backend GitHub connection is not configured." }, 503, origin);
 
   const url = new URL(request.url);
