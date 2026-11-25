@@ -21,7 +21,7 @@ on:
 
 permissions:
   actions: read
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -43,7 +43,7 @@ jobs:
       - name: Check out the project
         uses: actions/checkout@v4
         with:
-          persist-credentials: false
+          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -82,6 +82,17 @@ jobs:
 
           # Do not publish raw collection JSON, diagnostics, API credentials, or source inputs.
           find site -mindepth 1 -maxdepth 1 ! -name index.html -exec rm -rf {} +
+
+      - name: Preserve generated report on main
+        run: |
+          cp site/index.html index.html
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish collected research report"
+            git push origin HEAD:main
+          fi
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
