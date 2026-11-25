@@ -2,3 +2,5 @@ name = "deh-research-api"
 main = "cloudflare/worker.js"
 compatibility_date = "2026-11-24"
 workers_dev = true
+
+# Deploy automatically from the main branch.
