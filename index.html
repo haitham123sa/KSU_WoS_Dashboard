@@ -51,7 +51,7 @@ body.single-page #progress-track{display:none}
       <div class="filter-programme"><label for="programme">Programme</label><select id="programme"><option value="">All programmes</option></select></div>
       <div class="filter-faculty"><label for="faculty-filter">Faculty member</label><select id="faculty-filter"><option value="">All faculty</option></select></div>
       <div class="filter-year"><label for="academic-year">Academic year</label><select id="academic-year"><option value="2025">2025–2026</option></select></div>
-      <button class="btn btn-quiet filter-reset" id="clear-filters">Reset filters</button>
+      <div><label for="report-category">JCR reporting category</label><select id="report-category"></select></div><button class="btn btn-quiet filter-reset" id="clear-filters">Reset filters</button>
     </section>
     <div class="filter-meta"><p class="period-caption" id="period-caption">1 August 2025 – 31 July 2026</p><span class="reference-chip" id="reference-chip">JCR reference: 2025</span></div>
   </div>
@@ -145,7 +145,19 @@ body.single-page #progress-track{display:none}
     return httpsLink(url.href,doi);
   }
   function group() { return facultyKey ? {level:'faculty',key:facultyKey} : programme ? {level:'programme',key:programme} : {level:'department_union',key:'all_supplied_faculty'}; }
-  function rowFor(level,key,period) { return summaryIndex.get(JSON.stringify([level,String(key),String(period)])) || null; }
+  let reportingCategory='DENTISTRY, ORAL SURGERY & MEDICINE';
+  function categoryRecords(p){try{return typeof p.jcr_category_records==='string'?JSON.parse(p.jcr_category_records):p.jcr_category_records||[];}catch{return [];}}
+  function reportQuartile(p){if(!reportingCategory)return p.best_supplied_quartile;return categoryRecords(p).filter(j=>j.category===reportingCategory).map(j=>j.derived_jif_quartile).filter(q=>/^Q[1-4]$/.test(q)).sort()[0]||'';}
+  function categoryLabel(){return reportingCategory||'Best quartile across supplied categories';}
+  function rowFor(level,key,period) {
+    const row=summaryIndex.get(JSON.stringify([level,String(key),String(period)]));if(!row)return null;
+    const keys=state.faculty.filter(f=>level==='department_union'||level==='faculty'&&f.faculty_key===key||level==='programme'&&(f.programme||'Programme not supplied')===key).map(f=>f.faculty_key);
+    const ids=new Set(keys.flatMap(k=>state.snapshot?.associations?.[k]||[]));
+    const pubs=(state.snapshot?.publications||[]).filter(p=>ids.has(p.uid)&&(period==='all'||sameYear(p.academic_year_start,period)));
+    const counts=[0,0,0,0,0];for(const p of pubs){const q=reportQuartile(p);counts[/^Q[1-4]$/.test(q)?Number(q[1]):0]++;}
+    const complete=row.publication_total!==null&&row.publication_total!==undefined;
+    return {...row,q1_publications_supplied_categories:complete?counts[1]:null,q2_publications_supplied_categories:complete?counts[2]:null,q3_publications:complete?counts[3]:null,q4_publications:complete?counts[4]:null,observed_q1_publications:counts[1],observed_q2_publications:counts[2],publications_without_supplied_quartile:counts[0]};
+  }
   function selectedSummary(period) { const selected=group(); return rowFor(selected.level,selected.key,period); }
   function selectedFaculty() { return state.faculty.filter(f => (!programme || f.programme === programme) && (!facultyKey || f.faculty_key === facultyKey)); }
   function numberCell(value) { return hasNumber(value) ? esc(fmt(value)) : `<span class="muted">${state.snapshot ? 'Unavailable' : 'Awaiting'}</span>`; }
@@ -183,9 +195,11 @@ body.single-page #progress-track{display:none}
     const categories=[...new Set(state.journals.map(j=>j.category).filter(Boolean))].sort();
     $('journal-category').innerHTML='<option value="">All supplied categories</option>'+categories.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');
     $('journal-category').value=journalCategory;
+    if(reportingCategory&&!categories.includes(reportingCategory))reportingCategory='';
+    $('report-category').innerHTML='<option value="">Best quartile across categories</option>'+categories.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('');$('report-category').value=reportingCategory;
     $('period-caption').textContent=`1 August ${year}–31 July ${year+1}`;
     $('reference-chip').textContent=`JCR reference: ${jcrYear()}`;
-    $('quartile-definition').textContent=`The best quartile among your supplied categories, using JCR data year ${jcrYear()}. Unmatched journals keep an unavailable quartile.`;
+    $('quartile-definition').textContent=`JCR reporting basis: ${categoryLabel()} (${jcrYear()}). Journals without a quartile in this basis are unclassified.`;
     const timestamp=state.snapshot?.collected_at;
     $('last-refresh').innerHTML=`Last collection<strong>${esc(dateLabel(timestamp))}</strong>`;
     $('save-report').disabled=!state.snapshot || requestStarting || Boolean(state.job?.running);
@@ -319,7 +333,7 @@ body.single-page #progress-track{display:none}
   }
   function renderComparison() {
     const rows=selectedFaculty().filter(f=>normalized(f.name).includes(normalized(comparisonSearch)));
-    $('comparison-caption').textContent=`${rows.length} faculty shown · ${programme || 'All faculty'} · ${year}–${year+1}`;
+    $('comparison-caption').textContent=`${rows.length} faculty shown · ${programme || 'All faculty'} · ${year}–${year+1} · ${categoryLabel()}`;
     const body=rows.map(person=>{
       const all=rowFor('faculty',person.faculty_key,'all'), annual=rowFor('faculty',person.faculty_key,year);
       return `<tr><td class="name"><button class="faculty-link" data-faculty-key="${esc(person.faculty_key)}">${esc(person.name)}</button></td><td class="programme">${esc(person.programme)}</td><td class="num">${numberCell(all?.publication_total)}</td><td class="num">${numberCell(all?.current_citations_total)}</td><td class="num">${numberCell(annual?.publication_total)}</td><td class="num">${numberCell(annual?.current_citations_total)}</td><td class="num">${numberCell(annual?.q1_publications_supplied_categories)}</td><td class="num">${numberCell(annual?.q2_publications_supplied_categories)}</td><td>${facultyDataStatus(person,annual)}</td></tr>`;
@@ -354,15 +368,15 @@ body.single-page #progress-track{display:none}
     $('year-chart').innerHTML=`<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${esc(description)}" xmlns="http://www.w3.org/2000/svg">${grid}${bars}</svg><p class="table-note">Only complete ${citations?'citation':'publication'} totals are shown. ${esc(selectedPresent?'The selected academic year is highlighted.':unavailableNote)}</p>`;
   }
   function renderQuartiles() {
-    $('quartile-caption').textContent=`${year}–${year+1} publications · JCR ${jcrYear()}`;
+    $('quartile-caption').textContent=`${year}–${year+1} publications · ${categoryLabel()} · JCR ${jcrYear()}`;
     const row=selectedSummary(year);
     if(!state.snapshot){$('quartile-chart').innerHTML=emptyChart('Journal quality, at a glance','Quartiles will appear when collected publications are matched to your JCR reference.');return;}
     if(!row||row.retrieval_status!=='complete'||![row.publication_total,row.q1_publications_supplied_categories,row.q2_publications_supplied_categories,row.publications_without_supplied_quartile].every(hasNumber)){$('quartile-chart').innerHTML=emptyChart('Classification is incomplete','A distribution requires complete publication and quartile totals.');return;}
     const total=row.publication_total,q1=row.q1_publications_supplied_categories,q2=row.q2_publications_supplied_categories,unknown=row.publications_without_supplied_quartile,other=total-q1-q2-unknown;
     if(other<0){$('quartile-chart').innerHTML=emptyChart('Classification needs review','The supplied totals do not form a consistent distribution.');return;}
-    const items=[['Q1',q1,'#247f75'],['Q2',q2,'#5b91c4'],['Q3 / Q4',other,'#b2c3d5'],['Unclassified',unknown,'#e1e7ed']];
+    const items=[['Q1',q1,'#247f75'],['Q2',q2,'#5b91c4'],['Q3',row.q3_publications,'#b2c3d5'],['Q4',row.q4_publications,'#9aa8ba'],[reportingCategory?'Not classified in category':'Unclassified',unknown,'#e1e7ed']];
     let progress=0;const stops=items.map(([,count,color])=>{const from=progress;progress+=total?count/total*100:0;return `${color} ${from}% ${progress}%`;});
-    $('quartile-chart').innerHTML=`<div class="quartile-content"><div class="donut" style="background:${total?'conic-gradient('+stops.join(',')+')':'#e8eef3'}" role="img" aria-label="${esc(items.map(([label,count])=>label+': '+count).join('; '))}"><div class="donut-center"><strong>${fmt(total)}</strong><span>publications</span></div></div><div class="quartile-legend">${items.map(([label,count,color])=>`<div class="legend-row"><label><span class="legend-key" style="background:${color}"></span>${label}</label><strong>${fmt(count)}</strong></div>`).join('')}</div></div><p class="table-note">Best quartile among supplied categories. Unclassified journals are not Q4.</p>`;
+    $('quartile-chart').innerHTML=`<div class="quartile-content"><div class="donut" style="background:${total?'conic-gradient('+stops.join(',')+')':'#e8eef3'}" role="img" aria-label="${esc(items.map(([label,count])=>label+': '+count).join('; '))}"><div class="donut-center"><strong>${fmt(total)}</strong><span>publications</span></div></div><div class="quartile-legend">${items.map(([label,count,color])=>`<div class="legend-row"><label><span class="legend-key" style="background:${color}"></span>${label}</label><strong>${fmt(count)}</strong></div>`).join('')}</div></div><p class="table-note">${esc(categoryLabel())}. Unclassified journals are not Q4.</p>`;
   }
   function publicationRows() {
     const selectedKeys=new Set(selectedFaculty().map(f=>f.faculty_key));
@@ -372,8 +386,8 @@ body.single-page #progress-track{display:none}
       if(!visibleIds.has(p.uid)) return false;
       if(publicationPeriod==='selected'&&!sameYear(p.academic_year_start,year)) return false;
       if(publicationPeriod==='unassigned'&&p.academic_year_start!==null&&p.academic_year_start!==undefined&&p.academic_year_start!=='') return false;
-      if(publicationQuartile==='unavailable'&&/^Q[1-4]$/.test(p.best_supplied_quartile||'')) return false;
-      if(publicationQuartile&&publicationQuartile!=='unavailable'&&p.best_supplied_quartile!==publicationQuartile) return false;
+      if(publicationQuartile==='unavailable'&&/^Q[1-4]$/.test(reportQuartile(p)||'')) return false;
+      if(publicationQuartile&&publicationQuartile!=='unavailable'&&reportQuartile(p)!==publicationQuartile) return false;
       return normalized([p.title,p.doi,p.journal_name,p.uid].join(' ')).includes(normalized(publicationSearch));
     }).sort((a,b)=>(Number(b.assignment_year)||0)-(Number(a.assignment_year)||0)||String(a.title).localeCompare(String(b.title)));
   }
@@ -385,7 +399,7 @@ body.single-page #progress-track{display:none}
   function renderPublications() {
     const rows=publicationRows(); pubPage=Math.max(1,Math.min(pubPage,Math.ceil(rows.length/pageSize)||1));
     const visible=rows.slice((pubPage-1)*pageSize,pubPage*pageSize);
-    const body=visible.map(p=>`<tr><td class="publication-title"><button class="record-title" data-publication="${esc(p.uid)}">${esc(p.title||'Title unavailable')}</button><div class="metadata-line">${esc(p.uid)}${p.doi?' · DOI '+esc(p.doi):''}</div></td><td class="journal-cell">${esc(p.journal_name||'Journal unavailable')}</td><td class="mono">${esc(p.academic_year||'Unassigned')}<div class="metadata-line">${esc([p.publish_month_raw,p.publish_year_raw].filter(v=>v!==null&&v!==undefined&&v!=='').join(' '))}</div></td><td class="num">${numberCell(p.current_wos_citations)}</td><td>${quartileBadge(p.best_supplied_quartile)}</td></tr>`).join('');
+    const body=visible.map(p=>`<tr><td class="publication-title"><button class="record-title" data-publication="${esc(p.uid)}">${esc(p.title||'Title unavailable')}</button><div class="metadata-line">${esc(p.uid)}${p.doi?' · DOI '+esc(p.doi):''}</div></td><td class="journal-cell">${esc(p.journal_name||'Journal unavailable')}</td><td class="mono">${esc(p.academic_year||'Unassigned')}<div class="metadata-line">${esc([p.publish_month_raw,p.publish_year_raw].filter(v=>v!==null&&v!==undefined&&v!=='').join(' '))}</div></td><td class="num">${numberCell(p.current_wos_citations)}</td><td>${quartileBadge(reportQuartile(p))}</td></tr>`).join('');
     const empty=state.snapshot?'No publication records match these filters.':offline?'No publication records have been collected yet. A successful GitHub collection will populate this table.':'No publication data has been collected. Open Data & refresh to start a collection.';
     $('publication-table').innerHTML=`<table><thead><tr><th>Publication</th><th>Journal</th><th>Academic year</th><th class="num">Current<br>citations</th><th>Quartile</th></tr></thead><tbody>${body||`<tr><td colspan="5" class="empty-cell">${esc(empty)}</td></tr>`}</tbody></table>`;
     $('publication-paging').innerHTML=pagingHtml(rows.length,pubPage,'publications');
@@ -487,12 +501,12 @@ body.single-page #progress-track{display:none}
 
   function governanceRows(){
     const snap=state.snapshot;
-    const rows=snap.summary_rows.filter(r=>r.period===year);
-    const fields=['group_name','publication_total','current_citations_total','q1_publications_supplied_categories','q2_publications_supplied_categories','faculty_searches_complete','faculty_count'];
-    const headings=['Group','Publications','Current citations','Q1','Q2','Faculty collected','Faculty total'];
+    const rows=snap.summary_rows.filter(r=>r.period===year).map(r=>rowFor(r.level,r.group_key,r.period));
+    const fields=['group_name','publication_total','current_citations_total','q1_publications_supplied_categories','q2_publications_supplied_categories','q3_publications','q4_publications','faculty_searches_complete','faculty_count'];
+    const headings=['Group','Publications','Current citations','Q1','Q2','Q3','Q4','Faculty collected','Faculty total'];
     const group=level=>[headings,...rows.filter(r=>r.level===level).map(r=>fields.map(k=>r[k]??''))];
     const pubs=snap.publications;
-    return [['Report information',[['DEH Research Report'],['Academic year',year+'–'+(year+1)],['Source','Web of Science'],['Collected',snap.collected_at],['Generated',new Date().toISOString()],['JCR reference',snap.jcr_year??'Unavailable'],['Estimated dates',pubs.filter(p=>String(p.date_status).startsWith('estimated')).length],['Scope','All supplied faculty; summaries for selected academic year; publications sheet includes all years'],['Citations','Current cumulative citations, not citations received during the academic year']]],['Department',group('department_union')],['Programmes',group('programme')],['Faculty',group('faculty')],['Publications',[['Title','DOI','WoS ID','Journal','Academic year','Date status','Current citations','Quartile','Faculty'],...pubs.map(p=>[p.title,p.doi,p.uid,p.journal_name,p.academic_year,p.date_status,p.current_wos_citations,p.best_supplied_quartile,(publicationOwners.get(p.uid)||[]).map(f=>f.name).join('; ')])]],['Journal quartiles',[['Journal','ISSN','Category','Quartile','JCR year'],...state.journals.map(j=>[j.journal_name||j.name,j.issn,j.category,j.derived_jif_quartile,j.jcr_year])]]];
+    return [['Report information',[['DEH Research Report'],['Academic year',year+'–'+(year+1)],['Source','Web of Science'],['Collected',snap.collected_at],['Generated',new Date().toISOString()],['JCR reference',snap.jcr_year??'Unavailable'],['JCR reporting category',categoryLabel()],['Estimated dates',pubs.filter(p=>String(p.date_status).startsWith('estimated')).length],['Scope','All supplied faculty; summaries for selected academic year; publications sheet includes all years'],['Citations','Current cumulative citations, not citations received during the academic year']]],['Department',group('department_union')],['Programmes',group('programme')],['Faculty',group('faculty')],['Publications',[['Title','DOI','WoS ID','Journal','Academic year','Date status','Current citations','Quartile','Faculty'],...pubs.map(p=>[p.title,p.doi,p.uid,p.journal_name,p.academic_year,p.date_status,p.current_wos_citations,reportQuartile(p),(publicationOwners.get(p.uid)||[]).map(f=>f.name).join('; ')])]],['Journal quartiles',[['Journal','ISSN','Category','Quartile','JCR year'],...state.journals.map(j=>[j.journal_name||j.name,j.issn,j.category,j.derived_jif_quartile,j.jcr_year])]]];
   }
   function downloadWorkbook(){
     if(!state.snapshot)return;
@@ -545,6 +559,7 @@ body.single-page #progress-track{display:none}
 
   document.querySelector('.nav').addEventListener('click',event=>{const button=event.target.closest('[data-tab]');if(button)changeTab(button.dataset.tab);});
   document.querySelector('.nav').addEventListener('keydown',event=>{const tabs=[...document.querySelectorAll('.nav-tab')],index=tabs.indexOf(document.activeElement);if(index<0)return;let next=index;if(event.key==='ArrowRight'||event.key==='ArrowDown')next=(index+1)%tabs.length;else if(event.key==='ArrowLeft'||event.key==='ArrowUp')next=(index-1+tabs.length)%tabs.length;else if(event.key==='Home')next=0;else if(event.key==='End')next=tabs.length-1;else return;event.preventDefault();changeTab(tabs[next].dataset.tab);tabs[next].focus();});
+  $('report-category').addEventListener('change',event=>{reportingCategory=event.target.value;pubPage=1;renderAll();});
   $('programme').addEventListener('change',event=>{programme=event.target.value;facultyKey='';pubPage=1;renderAll();});
   $('faculty-filter').addEventListener('change',event=>{facultyKey=event.target.value;pubPage=1;renderAll();});
   $('clear-filters').addEventListener('click',()=>{programme='';facultyKey='';comparisonSearch='';$('faculty-comparison-search').value='';pubPage=1;renderAll();});
