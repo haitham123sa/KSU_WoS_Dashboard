@@ -23,7 +23,7 @@ body.single-page main>section{margin-bottom:32px;scroll-margin-top:20px}
 body.single-page .header-actions{flex-wrap:wrap}
 body.single-page #refresh-form{display:flex;margin:0}
 body.single-page #progress-track{display:none}
-</style></head>
+</style><style>#governance-print{display:none}@media print{@page{size:A4 landscape;margin:14mm}body.governance-printing>*:not(#governance-print){display:none!important}body.governance-printing #governance-print{display:block!important;color:#182b29;font:11pt Arial}#governance-print h1{color:#12634c;font-size:23pt}#governance-print h2{font-size:14pt;margin:14pt 0 6pt}#governance-print table{width:100%;border-collapse:collapse}#governance-print th,#governance-print td{border:1px solid #bbb;padding:5pt;text-align:left}#governance-print th{background:#e5efeb}#governance-print tr{break-inside:avoid}}</style></head>
 <body>
 <aside class="sidebar" aria-label="Dashboard navigation">
   <div class="sidebar-brand"><div class="brand-mark" aria-hidden="true">DEH</div><div><div class="brand-name">DEH Research</div><div class="brand-sub">Faculty analytics</div></div></div>
@@ -40,7 +40,7 @@ body.single-page #progress-track{display:none}
 <div class="wrap">
   <header class="site-header">
     <div><p class="eyebrow">DEH · RESEARCH ANALYTICS</p><h1 id="page-title">Research overview</h1><p class="subtitle" id="page-subtitle">Publications, current citations and journal quality in one place.</p></div>
-    <div class="header-actions"><button id="save-report" class="btn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg>Save report</button><button id="print-report" class="btn hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7z"/></svg>Print view</button><a id="github-refresh-link" class="btn btn-primary hidden" href="https://github.com/haitham123sa/deh-research-dashboard/actions/workflows/refresh.yml" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 7a8 8 0 0 0-14-2L3 8m0-5v5h5M4 17a8 8 0 0 0 14 2l3-3m0 5v-5h-5"/></svg>Refresh data</a><button id="manage-data" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 7a8 8 0 0 0-14-2L3 8m0-5v5h5M4 17a8 8 0 0 0 14 2l3-3m0 5v-5h-5"/></svg>Refresh data</button></div>
+    <div class="header-actions"><button id="save-report" class="btn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4"/></svg>Export PDF</button><button id="export-excel" class="btn" disabled>Export Excel</button><button id="print-report" class="btn hidden"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M7 8V3h10v5M7 17H4V9h16v8h-3M7 14h10v7H7z"/></svg>Print view</button><a id="github-refresh-link" class="btn btn-primary hidden" href="https://github.com/haitham123sa/deh-research-dashboard/actions/workflows/refresh.yml" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 7a8 8 0 0 0-14-2L3 8m0-5v5h5M4 17a8 8 0 0 0 14 2l3-3m0 5v-5h-5"/></svg>Refresh data</a><button id="manage-data" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M20 7a8 8 0 0 0-14-2L3 8m0-5v5h5M4 17a8 8 0 0 0 14 2l3-3m0 5v-5h-5"/></svg>Refresh data</button></div>
   </header>
   <div class="header-meta"><span id="data-state" class="data-state" role="status">Waiting for research data</span><div id="last-refresh" class="last-refresh">Last collection<strong>Not collected yet</strong></div></div>
   <div id="global-alert" class="alert-area" role="alert"></div>
@@ -228,6 +228,7 @@ body.single-page #progress-track{display:none}
     $('refresh-button').querySelector('span').textContent=running ? 'Refreshing…' : 'Refresh from WoS';
     $('progress-block').classList.toggle('hidden',!running);
     $('save-report').disabled=!state.snapshot || running;
+    $('export-excel').disabled=!state.snapshot || running;
     if(running) {
       const total=hasNumber(job.total) ? job.total : state.faculty.length;
       const done=hasNumber(job.done) ? job.done : 0;
@@ -483,7 +484,43 @@ body.single-page #progress-track{display:none}
       await loadState();requestStarting=false;renderJob();schedulePoll();
     } catch(error) {requestStarting=false;renderJob();setAlert(error.message);} finally {key='';}
   }
+
+  function governanceRows(){
+    const snap=state.snapshot;
+    const rows=snap.summary_rows.filter(r=>r.period===year);
+    const fields=['group_name','publication_total','current_citations_total','q1_publications_supplied_categories','q2_publications_supplied_categories','faculty_searches_complete','faculty_count'];
+    const headings=['Group','Publications','Current citations','Q1','Q2','Faculty collected','Faculty total'];
+    const group=level=>[headings,...rows.filter(r=>r.level===level).map(r=>fields.map(k=>r[k]??''))];
+    const pubs=snap.publications;
+    return [['Report information',[['DEH Research Report'],['Academic year',year+'–'+(year+1)],['Source','Web of Science'],['Collected',snap.collected_at],['Generated',new Date().toISOString()],['JCR reference',snap.jcr_year??'Unavailable'],['Estimated dates',pubs.filter(p=>String(p.date_status).startsWith('estimated')).length],['Scope','All supplied faculty; summaries for selected academic year; publications sheet includes all years'],['Citations','Current cumulative citations, not citations received during the academic year']]],['Department',group('department_union')],['Programmes',group('programme')],['Faculty',group('faculty')],['Publications',[['Title','DOI','WoS ID','Journal','Academic year','Date status','Current citations','Quartile','Faculty'],...pubs.map(p=>[p.title,p.doi,p.uid,p.journal_name,p.academic_year,p.date_status,p.current_wos_citations,p.best_supplied_quartile,(publicationOwners.get(p.uid)||[]).map(f=>f.name).join('; ')])]],['Journal quartiles',[['Journal','ISSN','Category','Quartile','JCR year'],...state.journals.map(j=>[j.journal_name||j.name,j.issn,j.category,j.derived_jif_quartile,j.jcr_year])]]];
+  }
+  function downloadWorkbook(){
+    if(!state.snapshot)return;
+    const sheets=governanceRows(), enc=new TextEncoder(), xml=v=>String(v??'').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const ns='http://schemas.openxmlformats.org/spreadsheetml/2006/main', rel='http://schemas.openxmlformats.org/officeDocument/2006/relationships', pkg='http://schemas.openxmlformats.org/package/2006/relationships';
+    const files={};
+    files['[Content_Types].xml']='<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+sheets.map((_,i)=>'<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join('')+'</Types>';
+    files['_rels/.rels']='<Relationships xmlns="'+pkg+'"><Relationship Id="rId1" Type="'+rel+'/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+    files['xl/workbook.xml']='<workbook xmlns="'+ns+'" xmlns:r="'+rel+'"><sheets>'+sheets.map(([name],i)=>'<sheet name="'+xml(name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>').join('')+'</sheets></workbook>';
+    files['xl/_rels/workbook.xml.rels']='<Relationships xmlns="'+pkg+'">'+sheets.map((_,i)=>'<Relationship Id="rId'+(i+1)+'" Type="'+rel+'/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>').join('')+'</Relationships>';
+    sheets.forEach(([name,rows],i)=>{files['xl/worksheets/sheet'+(i+1)+'.xml']='<worksheet xmlns="'+ns+'"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><sheetData>'+rows.map((r,j)=>'<row r="'+(j+1)+'">'+r.map((v,k)=>{const a=String.fromCharCode(65+k)+(j+1);return typeof v==='number'&&Number.isFinite(v)?'<c r="'+a+'"><v>'+v+'</v></c>':'<c r="'+a+'" t="inlineStr"><is><t xml:space="preserve">'+xml(v)+'</t></is></c>';}).join('')+'</row>').join('')+'</sheetData></worksheet>';});
+    const chunks=[],central=[];let offset=0,cs=0;
+    const crc=b=>{let c=-1;for(const x of b){c^=x;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0);}return (c^-1)>>>0;};
+    const header=(n,fields)=>{const b=new Uint8Array(n),d=new DataView(b.buffer);for(const [p,v,l] of fields)l===2?d.setUint16(p,v,true):d.setUint32(p,v,true);return b;};
+    for(const [name,content] of Object.entries(files)){const n=enc.encode(name),b=enc.encode(content),c=crc(b);const h=header(30,[[0,0x04034b50,4],[4,20,2],[14,c,4],[18,b.length,4],[22,b.length,4],[26,n.length,2]]);chunks.push(h,n,b);const z=header(46,[[0,0x02014b50,4],[4,20,2],[6,20,2],[16,c,4],[20,b.length,4],[24,b.length,4],[28,n.length,2],[42,offset,4]]);central.push(z,n);cs+=z.length+n.length;offset+=h.length+n.length+b.length;}
+    const end=header(22,[[0,0x06054b50,4],[8,Object.keys(files).length,2],[10,Object.keys(files).length,2],[12,cs,4],[16,offset,4]]);
+    const url=URL.createObjectURL(new Blob([...chunks,...central,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));const a=document.createElement('a');a.href=url;a.download='DEH_Research_'+year+'.xlsx';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);
+  }
+  function printGovernance(){
+    if(!state.snapshot)return;
+    const sections=governanceRows().slice(0,4);
+    const report=document.createElement('article');report.id='governance-print';
+    report.innerHTML='<h1>King Saud University</h1><h2>Department of Dental Health | Research performance report</h2><p>Academic year '+year+'–'+(year+1)+'</p>'+sections.map(([name,rows])=>'<section><h2>'+esc(name)+'</h2><table>'+rows.map((r,i)=>'<tr>'+r.map(v=>'<'+(i===0?'th':'td')+'>'+esc(v??'Unavailable')+'</'+(i===0?'th':'td')+'>').join('')+'</tr>').join('')+'</table></section>').join('')+'<p>Quartiles cover supplied JCR categories only. Estimated publication dates are included. Blank values indicate unavailable measures.</p>';
+    document.body.append(report);document.body.classList.add('governance-printing');window.print();document.body.classList.remove('governance-printing');report.remove();
+  }
+
   async function saveReport() {
+    if(remote){printGovernance();return;}
     if(!state.snapshot)return;
     const button=$('save-report');button.disabled=true;
     try {
@@ -517,6 +554,7 @@ body.single-page #progress-track{display:none}
   $('academic-year').addEventListener('change',event=>{year=Number(event.target.value);pubPage=1;renderAll();});
   $('refresh-form').addEventListener('submit',startRefresh);
   $('save-report').addEventListener('click',saveReport);
+  $('export-excel').addEventListener('click',downloadWorkbook);
   $('print-report').addEventListener('click',()=>window.print());
   $('faculty-comparison-search').addEventListener('input',event=>{comparisonSearch=event.target.value;renderComparison();});
   $('publication-search').addEventListener('input',event=>{publicationSearch=event.target.value;pubPage=1;renderPublications();});
